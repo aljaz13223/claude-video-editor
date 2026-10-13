@@ -1,0 +1,26 @@
+{
+  "id": "editorial-depth",
+  "order": 8,
+  "name": "Editorial Depth",
+  "tagline": "Magazine typography behind and in front of the speaker",
+  "description": "Dark navy letterbox with the 16:9 shot in the middle. The speaker is cut out automatically so words live behind their head: tall didone capitals across the top of the frame building word by word with one red key word, a huge red script word behind the head with a small caps line in front, or condensed caps + italic serif next to the head. Text follows the head, layouts rotate and every third phrase is left empty so the face can breathe. Mixed fonts, premium, magazine-like.",
+  "best_for": [
+    "wisdom and philosophy clips",
+    "calm, premium interview channels",
+    "quotes with one strong key word"
+  ],
+  "preview": "preview.jpg",
+  "template": "template.html",
+  "format_4x5": "format_4x5.css",
+  "video": {
+    "crop_w": 1280,
+    "out_w": 1080,
+    "out_h": 608,
+    "face_track": false,
+    "grade": "eq=contrast=1.06:saturation=1.05"
+  },
+  "flags": {
+    "depth": true,
+    "hero_color": "#d4141c"
+  }
+}

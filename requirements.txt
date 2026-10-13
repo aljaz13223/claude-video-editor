@@ -2,3 +2,4 @@ numpy>=1.24
 opencv-python>=4.8
 faster-whisper>=1.0
 truststore>=0.9   # optional: use the OS certificate store
+mediapipe>=0.10.14

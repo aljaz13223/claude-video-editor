@@ -1,7 +1,7 @@
 """Background music under speech.
 Picks the part of the track that builds towards the end, loops with a crossfade if it is too short, and ducks it
 relative to the measured speech level: speech_db under speech, gap_db in pauses, end_db on the end card.
-Without "music" in shorts.json a soft synthesized pad is used instead. Writes build/<id>/bed.wav and copies it into every style folder."""
+Without "music" in shorts.json a soft synthesized pad is used instead; "music": "none" = speech only (add a trending sound in the app). Writes build/<id>/bed.wav and copies it into every style folder."""
 import os, shutil, subprocess, wave
 import numpy as np
 from .project import ffmpeg
@@ -50,7 +50,9 @@ def bed_for(P, sid, music_file, seed=0):
     act = rms > max(0.008, 0.18 * np.percentile(rms, 90))
     act = np.convolve(act.astype(float), np.ones(7) / 7, "same") > 0.15
     sp_rms = float(np.median(rms[act])) if act.any() else 0.05
-    if music_file:
+    if music_file == "none":   # speech only — e.g. a trending sound will be added in the Instagram / TikTok app
+        m = np.zeros((N, 2))
+    elif music_file:
         m = dec(music_file, 2)
         mr = np.sqrt(np.mean(m.mean(1)[: len(m) // hop * hop].reshape(-1, hop) ** 2, 1) + 1e-12); Wn = int(total / 0.05)
         if len(mr) > Wn + 20:   # window whose second half is strongest (builds up), quiet start
@@ -65,6 +67,7 @@ def bed_for(P, sid, music_file, seed=0):
     else:
         m = pad(total, seed)
     m = m[:N].astype(np.float64); m_rms = float(np.sqrt(np.mean(m ** 2)) + 1e-9)
+    if music_file == "none": m_rms = 1.0
     L = P.cfg["music"]; tfr = np.arange(fr) * 0.05
     db = np.where(act, L["speech_db"], L["gap_db"]); db = np.where(tfr >= vend, L["end_db"], db)
     g = np.interp(np.arange(N) / SR, tfr, 10 ** (smooth(db, 6) / 20) * sp_rms / m_rms)
@@ -81,7 +84,7 @@ def bed_for(P, sid, music_file, seed=0):
 
 def run(P, ids=()):
     for n, s in enumerate(P.select(ids)):
-        mf = os.path.join(P.p(P.cfg["music_dir"]), s["music"]) if s.get("music") else None
-        if mf and not os.path.exists(mf): raise SystemExit(f"music not found: {mf}")
+        mf = "none" if s.get("music") in ("none", False) else (os.path.join(P.p(P.cfg["music_dir"]), s["music"]) if s.get("music") else None)
+        if mf and mf != "none" and not os.path.exists(mf): raise SystemExit(f"music not found: {mf}")
         r = bed_for(P, s["id"], mf, n)
         print(s["id"], "music:", s.get("music", "(generated pad)"), f"speech rms {r:.3f}", flush=True)

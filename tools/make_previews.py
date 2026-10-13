@@ -1,6 +1,7 @@
 """Regenerate the reference image of every style: builds a demo project with a synthetic presenter clip
 (no real person, no third-party footage), renders each style in 9:16 and saves styles/<id>/preview.jpg.
    python tools/make_previews.py            (needs ffmpeg, Node/npx and Pillow)"""
+import sys
 import json, math, os, random, shutil, subprocess, sys
 import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -66,10 +67,12 @@ def main():
                 "who": "Dr. Sample Guest", "role": "researcher", "segs": [["demo-episode", 0.5, t + 0.2]], "gfx": gfx, "cx": [640], "styles": styles}],
               open(os.path.join(DEMO, "shorts.json"), "w"), indent=1)
     P = Project(DEMO)
-    cut.run(P); build.run(P, formats=("9x16",)); music.run(P); render.run(P, formats=("9x16",))
+    only = tuple(a for a in sys.argv[1:] if not a.startswith("-"))   # e.g. make_previews.py one-word sepia-hype
+    cut.run(P); build.run(P, formats=("9x16",), only_styles=only); music.run(P); render.run(P, formats=("9x16",), styles=only) if only else render.run(P, formats=("9x16",))
     T = json.load(open(P.p("build", "s01", "timeline.json")))
     g2 = T["gfx"][1]["t"] if len(T["gfx"]) > 1 else 4.0
     for sid, st in all_styles().items():
+        if only and sid not in only: continue
         f = P.p("build", "s01", sid, "final.mp4")
         if not os.path.exists(f): print("no render for", sid); continue
         at = g2 + 1.1 if (st.get("flags", {}).get("bfull") or sid == "clean-podcast") else T["words"][6]["s"] + 0.2

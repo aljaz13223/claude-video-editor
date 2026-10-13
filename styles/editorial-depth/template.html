@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="{{lang}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Playfair+Display:ital,wght@1,500;1,800&family=Bodoni+Moda:wght@500&family=Pinyon+Script&family=Nunito:wght@300&family=Inter:wght@600;700&display=block" rel="stylesheet" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #0b0f17; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #0b0f17; }
+      /* the 16:9 frame; everything inside is clipped to it */
+      #frame { position: absolute; left: 0; top: 656px; width: 1080px; height: 608px; overflow: hidden; }
+      #frame > * { position: absolute; left: 0; top: 0; width: 1080px; height: 608px; }
+      #ar, #pp { object-fit: cover; transform-origin: 50% 40%; }
+      #ar { z-index: 1; } #behind { z-index: 2; } #pp { z-index: 3; } #front { z-index: 4; }
+      .fl { position: absolute; left: 0; top: 0; width: 1080px; height: 608px; }
+      .g { position: absolute; opacity: 0; text-align: center; white-space: nowrap; transform: translate(-50%, -50%); }
+      .g .l1 { display: block; font-family: "Oswald"; font-weight: 700; font-size: 74px; line-height: 0.95; letter-spacing: -1px; text-transform: uppercase; color: #fff;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
+      .g .l2 { display: block; font-family: "Playfair Display"; font-style: italic; font-weight: 500; font-size: 64px; line-height: 0.9; margin-top: -10px; color: #fff;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
+      .hero { position: absolute; opacity: 0; white-space: nowrap; transform: translate(-50%, -50%); font-family: "Bodoni Moda"; font-weight: 500;
+        font-size: 300px; line-height: 1; letter-spacing: -6px; text-transform: uppercase; color: var(--red); }
+      .script { position: absolute; opacity: 0; white-space: nowrap; transform: translate(-50%, -50%) rotate(-6deg); font-family: "Pinyon Script";
+        font-size: 112px; line-height: 1; color: #fff; text-shadow: 0 3px 14px rgba(0,0,0,0.5); }
+      /* A/C: tall didone capitals across the top of the frame (behind the speaker) */
+      .cap { position: absolute; left: 0; width: 1080px; text-align: center; white-space: nowrap; font-family: "Bodoni Moda"; font-weight: 500;
+        text-transform: uppercase; color: #fff; line-height: 1; letter-spacing: -2px; transform-origin: 50% 0; transform: scaleY(1.28); opacity: 0; }
+      .cap span, .ln span { opacity: 0; display: inline-block; }
+      .cap .k { color: var(--red); }
+      /* B: small white sans capitals line (in front) */
+      .ln { position: absolute; left: 0; width: 1080px; text-align: center; white-space: nowrap; font-family: "Inter"; font-weight: 600;
+        font-size: 40px; letter-spacing: 1px; text-transform: uppercase; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); opacity: 0; }
+      .script.red { color: var(--red); text-shadow: none; font-size: 300px; transform: none; font-family: "Playfair Display"; font-style: italic; font-weight: 800; letter-spacing: -6px; }
+      #end { position: absolute; inset: 0; z-index: 9; background: #0b0f17; opacity: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      #end .logo { width: 180px; height: 180px; }
+      #end .a { font-family: "Inter"; font-weight: 600; font-size: 38px; color: rgba(255,255,255,0.78); margin-top: 42px; }
+      #end .b { font-family: "Nunito"; font-weight: 300; font-size: 100px; color: #fff; margin-top: 6px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="__TOTAL__" data-width="1080" data-height="1920">
+      <div id="frame">
+        <video id="ar" class="clip" src="assets/aroll.mp4" data-start="0" data-duration="__VEND__" data-track-index="0" data-has-audio="true" playsinline></video>
+        <div id="behind" class="clip" data-start="0" data-duration="__VEND__" data-track-index="4"><div class="fl" id="flb"></div></div>
+        <video id="pp" class="clip" src="assets/person.webm" data-start="0" data-duration="__VEND__" data-track-index="1" muted playsinline></video>
+        <div id="front" class="clip" data-start="0" data-duration="__VEND__" data-track-index="5"><div class="fl" id="flf"></div></div>
+      </div>
+      <audio id="bed" class="clip" src="assets/bed.wav" data-start="0" data-duration="__TOTAL__" data-track-index="2"></audio>
+      <div id="ui" class="clip" data-start="0" data-duration="__TOTAL__" data-track-index="3" style="position:absolute;inset:0;z-index:9;pointer-events:none">
+        <div id="end">
+          <img class="logo" src="assets/logo.svg" alt="">
+          <div class="a">{{end_line}}</div>
+          <div class="b">{{brand}}</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const D = __DATA__;
+      document.documentElement.style.setProperty("--red", D.hero_color || "#d4141c");
+      const tl = gsap.timeline({ paused: true });
+      const IR = { immediateRender: false };
+      const T = (D.track && D.track.pts && D.track.pts.length) ? D.track.pts : [[0, 540, 120]];
+      const mx = T.reduce((a, p) => a + p[1], 0) / T.length, my = T.reduce((a, p) => a + p[2], 0) / T.length;
+      const headAt = (t) => { let p = T[0]; for (const q of T) { if (q[0] > t) break; p = q; } return p; };
+      // the same slow push-in on the shot and on the cut-out person
+      D.segs.forEach((sg) => tl.fromTo(["#ar", "#pp"], { scale: 1.0 }, { scale: 1.04, duration: sg.dur, ease: "none", ...IR }, sg.start));
+      tl.fromTo("#frame", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      // text layers follow the head (half the movement, smoothed)
+      for (let i = 1; i < T.length; i++) {
+        const dx = (T[i][1] - mx) * 0.5, dy = (T[i][2] - my) * 0.5;
+        tl.to(["#flb", "#flf"], { x: dx, y: dy, duration: T[i][0] - T[i - 1][0], ease: "none", ...IR }, T[i - 1][0]);
+      }
+      // phrases: up to 6 words, break on punctuation. Layouts rotate; every third phrase has no text (the face breathes).
+      const W = D.words.filter((w) => w.t.replace(/[^\p{L}\p{N}]/gu, "").length);
+      const G = []; let cur = [];
+      W.forEach((w) => { cur.push(w); if (cur.length === 4 || /[.,!?;:]$/.test(w.t)) { G.push(cur); cur = []; } });
+      if (cur.length) G.push(cur);
+      const clean = (t) => t.replace(/[.,;:!?"“”„]+/g, "");
+      const CYCLE = D.layouts || ["A", "B", "D", "skip", "C", "A", "D", "skip"];
+      const fit = (chars, max, k) => Math.min(max, 1010 / (k * Math.max(3, chars)));
+      const FB = document.getElementById("flb"), FF = document.getElementById("flf");
+      const spans = (el, words, key) => { el.innerHTML = ""; words.forEach((t, j) => {
+        const sp = document.createElement("span"); sp.textContent = t; if (j === key) sp.className = "k"; el.appendChild(sp);
+        if (j < words.length - 1) el.appendChild(document.createTextNode(" ")); }); return [...el.querySelectorAll("span")]; };
+      const reveal = (sps, g, from) => sps.forEach((sp, j) => tl.fromTo(sp, { opacity: 0, y: from }, { opacity: 1, y: 0, duration: 0.18, ease: "power2.out", ...IR }, g[j].s - 0.03));
+      let n = 0;
+      G.forEach((g, gi) => {
+        const s0 = g[0].s - 0.03, nx = G[gi + 1];
+        let e0 = nx ? Math.min(nx[0].s - 0.03, g[g.length - 1].e + 0.5) : Math.min(D.vend - 0.05, g[g.length - 1].e + 0.6);
+        if (nx && nx[0].s - 0.03 - e0 < 0.35) e0 = nx[0].s - 0.03;
+        const words = g.map((w) => clean(w.t));
+        const L = words.map((t) => t.length), key = L.indexOf(Math.max(...L));
+        let lay = CYCLE[n++ % CYCLE.length];
+        if (gi === 0 && lay === "skip") lay = "A";
+        if (lay === "skip") return;
+        if (lay === "B" && words[key].length < 4) lay = "C";
+        const hp = headAt(s0), hx = hp[1] - (hp[1] - mx) * 0.5;
+        const made = [];
+        if (lay === "A" && words.length >= 2) {
+          // two lines of tall capitals over the top of the frame, key word red, building word by word, behind the head
+          const k = Math.min(2, words.length - 1), w1 = words.slice(0, k), w2 = words.slice(k);
+          const f1 = fit(w1.join(" ").length, 190, 0.6), f2 = Math.min(f1 * 0.62, fit(w2.join(" ").length, 95, 0.66));
+          const e1 = document.createElement("div"), e2 = document.createElement("div"); e1.className = e2.className = "cap";
+          e1.style.fontSize = f1 + "px"; e1.style.top = "26px"; e2.style.fontSize = f2 + "px"; e2.style.top = (30 + f1 * 1.28) + "px";
+          FB.appendChild(e1); FB.appendChild(e2);
+          const sp = spans(e1, w1, key < k ? key : -1).concat(spans(e2, w2, key >= k ? key - k : -1));
+          reveal(sp, g, -10); made.push(e1, e2);
+        } else if (lay === "B") {
+          // huge red script key word behind the head, the rest as a small white caps line in front
+          const big = document.createElement("div"); big.className = "script red"; big.textContent = words[key].toLowerCase();
+          big.style.fontSize = Math.min(320, 1700 / Math.max(4, words[key].length)) + "px";
+          big.style.left = Math.max(380, Math.min(700, hx)) + "px"; big.style.top = "300px"; FB.appendChild(big);
+          const ln = document.createElement("div"); ln.className = "ln"; ln.style.top = "282px"; FF.appendChild(ln);
+          const rest = words.map((t, j) => j === key ? "\u2003\u2003" : t);
+          const sp = spans(ln, rest, -1);
+          tl.fromTo(big, { opacity: 0, scale: 0.9, xPercent: -50, yPercent: -50, rotation: -4 }, { opacity: 1, scale: 1, xPercent: -50, yPercent: -50, rotation: -4, duration: 0.35, ease: "power2.out", ...IR }, g[key].s - 0.03);
+          reveal(sp, g, 8); made.push(big, ln);
+        } else if (lay === "C" || lay === "A") {
+          // one line of big red capitals over the top of the frame, behind the head
+          const e1 = document.createElement("div"); e1.className = "cap"; e1.style.color = "var(--red)";
+          e1.style.fontSize = fit(words.join(" ").length, 170, 0.66) + "px"; e1.style.top = "40px"; FB.appendChild(e1);
+          reveal(spans(e1, words, -1), g, -10); made.push(e1);
+        } else {
+          // D: condensed caps + italic serif next to the head, in front
+          const el = document.createElement("div"); el.className = "g";
+          const k = Math.ceil(words.length / 2);
+          el.innerHTML = '<span class="l1"></span><span class="l2"></span>';
+          el.children[0].textContent = words.slice(0, k).join(" ");
+          el.children[1].textContent = words.slice(k).join(" ").toLowerCase();
+          const hw = Math.max(words.slice(0, k).join(" ").length * 0.5 * 74, words.slice(k).join(" ").length * 0.42 * 64) / 2;
+          const side = hx < 540 ? hx + 120 + hw : hx - 120 - hw;
+          el.style.left = Math.max(hw + 30, Math.min(1050 - hw, side)) + "px"; el.style.top = Math.max(200, Math.min(420, my + 200)) + "px";
+          FF.appendChild(el);
+          tl.fromTo(el.children[0], { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.22, ease: "power3.out", ...IR }, s0);
+          const t2 = g[k] ? g[k].s - 0.03 : s0 + 0.15;
+          tl.fromTo(el.children[1], { opacity: 0, x: -14 }, { opacity: 1, x: 0, duration: 0.25, ease: "power2.out", ...IR }, t2);
+          made.push(el);
+        }
+        made.forEach((el) => { if (!el.classList.contains("script")) tl.set(el, { opacity: 1 }, s0); });
+        tl.set(made, { opacity: 0 }, e0);
+      });
+      tl.fromTo("#end", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out", ...IR }, D.vend - 0.05);
+      tl.fromTo(["#end .logo", "#end .a", "#end .b"], { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out", stagger: 0.1, ...IR }, D.vend + 0.15);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

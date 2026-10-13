@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="{{lang}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;800;900&family=Montserrat:wght@700;900&family=Nunito:wght@300&display=block" rel="stylesheet" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #0b0f17; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #0b0f17; }
+      #ar { position: absolute; left: 0; top: 656px; width: 1080px; height: 608px; object-fit: cover; z-index: 1; transform-origin: 50% 45%; }
+      #ui { position: absolute; inset: 0; z-index: 5; }
+      #tb { position: absolute; left: 0; right: 0; top: 0; height: 656px; background: #0b0f17; }
+      #bb { position: absolute; left: 0; right: 0; top: 1264px; bottom: 0; background: #0b0f17; }
+      .w { position: absolute; left: 40px; right: 40px; text-align: center; opacity: 0; white-space: nowrap; }
+      /* minimal: small clean white word */
+      .min .w { top: 930px; font-family: "Inter"; font-weight: 500; font-size: 48px; color: #fff; letter-spacing: -0.3px;
+        text-shadow: 0 2px 3px rgba(0,0,0,0.55), 0 0 18px rgba(0,0,0,0.35); }
+      /* texture: big heavy word filled with a moving water-like gradient */
+      .tex .w { top: 870px; font-family: "Inter"; font-weight: 900; font-size: 132px; line-height: 1; letter-spacing: -4px;
+        background-image: linear-gradient(115deg, #3a8fd8 0%, #5aa8ec 18%, #a8dcff 30%, #ffffff 36%, #3f8fd0 46%, #3f92dc 60%, #7cc4f5 74%, #ffffff 80%, #4a9ae0 92%, #3a8fd8 100%);
+        background-size: 320% 100%; background-position: 0% 50%; -webkit-background-clip: text; background-clip: text; color: transparent;
+        filter: drop-shadow(0 0 2px rgba(0,20,50,0.9)) drop-shadow(0 6px 16px rgba(0,0,0,0.5)); }
+      /* bold: heavy white word with dark glow (sports / hype edits) */
+      .bold .w { top: 878px; font-family: "Inter"; font-weight: 800; font-size: 84px; color: #fff; letter-spacing: -1.5px;
+        text-shadow: 0 0 6px rgba(0,0,0,0.9), 0 0 22px rgba(0,0,0,0.75), 0 4px 10px rgba(0,0,0,0.6); }
+      #edge { position: absolute; left: 0; right: 0; top: 653px; height: 4px; background: linear-gradient(90deg, rgba(255,226,180,0.25), rgba(255,236,205,0.95) 50%, rgba(255,226,180,0.25)); box-shadow: 0 0 14px rgba(255,214,160,0.7); display: none; }
+      #leak { position: absolute; top: 0; height: 656px; width: 3px; left: 370px; background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0.22), rgba(255,255,255,0)); display: none; }
+      #grain { position: absolute; left: 0; right: 0; top: 656px; height: 608px; opacity: 0.16; mix-blend-mode: overlay; display: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+      /* emph: 2-3 word phrase, the key word bigger and heavier (Montserrat-like) */
+      .emph .w { top: 892px; font-family: "Montserrat", "Inter"; font-weight: 700; font-size: 54px; color: #fff; letter-spacing: -0.5px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.6), 0 0 20px rgba(0,0,0,0.4); }
+      .emph .w b { font-weight: 900; font-size: 92px; letter-spacing: -2px; vertical-align: -6px; margin-left: 14px; }
+      #end { position: absolute; inset: 0; background: #0b0f17; opacity: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      #end .logo { width: 180px; height: 180px; }
+      #end .a { font-family: "Inter"; font-weight: 600; font-size: 38px; color: rgba(255,255,255,0.78); margin-top: 42px; }
+      #end .b { font-family: "Nunito"; font-weight: 300; font-size: 100px; color: #fff; margin-top: 6px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="__TOTAL__" data-width="1080" data-height="1920">
+      <video id="ar" class="clip" src="assets/aroll.mp4" data-start="0" data-duration="__VEND__" data-track-index="0" data-has-audio="true" playsinline></video>
+      <audio id="bed" class="clip" src="assets/bed.wav" data-start="0" data-duration="__TOTAL__" data-track-index="2"></audio>
+      <div id="ui" class="clip" data-start="0" data-duration="__TOTAL__" data-track-index="3">
+        <div id="tb"></div><div id="bb"></div>
+        <div id="grain"></div><div id="edge"></div><div id="leak"></div>
+        <div id="words"></div>
+        <div id="end">
+          <img class="logo" src="assets/logo.svg" alt="">
+          <div class="a">{{end_line}}</div>
+          <div class="b">{{brand}}</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const D = __DATA__;
+      const tl = gsap.timeline({ paused: true });
+      const IR = { immediateRender: false };
+      const MODE = { texture: "tex", bold: "bold", emphasis: "emph" }[D.caption_mode] || "min";
+      if (D.bg) ["root", "tb", "bb", "end"].forEach((id) => document.getElementById(id).style.background = D.bg);
+      if (D.edge_line) document.getElementById("edge").style.display = "block";
+      if (D.grain) { document.getElementById("grain").style.display = "block"; document.getElementById("leak").style.display = "block"; }
+      const WB = document.getElementById("words"); WB.className = MODE;
+      // subtle push-in on every clip
+      D.segs.forEach((sg) => tl.fromTo("#ar", { scale: 1.0 }, { scale: 1.04, duration: sg.dur, ease: "none", ...IR }, sg.start));
+      tl.fromTo("#ar", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 0);
+      // one word at a time; a word stays until the next one starts unless the pause is long (no empty frames)
+      let W = D.words.filter((w) => w.t.replace(/[^\p{L}\p{N}]/gu, "").length);
+      if (MODE === "emph") {   // phrases of up to 3 words; break on punctuation; the key word (number, or longest >= 5 letters) gets <b>
+        const G = []; let cur = [];
+        W.forEach((w) => { cur.push(w); if (cur.length === 3 || /[.,!?;:]$/.test(w.t)) { G.push(cur); cur = []; } });
+        if (cur.length) G.push(cur);
+        W = G.map((g) => {
+          const clean = g.map((w) => w.t.replace(/[.,;:"“”„]+$/g, ""));
+          let k = clean.findIndex((t) => /\d/.test(t));
+          if (k < 0) { const L = clean.map((t) => t.length); const m = Math.max(...L); k = m >= 5 ? L.lastIndexOf(m) : -1; }
+          const esc = (t) => t.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+          const html = clean.map((t, j) => j === k ? "<b>" + esc(t) + "</b>" : esc(t)).join(" ").replace(/ <b>/, "<b>");
+          return { t: clean.join(" "), html, s: g[0].s, e: g[g.length - 1].e };
+        });
+      }
+      W.forEach((w, i) => {
+        const el = document.createElement("div"); el.className = "w";
+        if (w.html) el.innerHTML = w.html; else el.textContent = MODE === "tex" ? w.t.replace(/[.,!?;:"“”„]+/g, "") : w.t.replace(/[.,;:"“”„]+$/g, "");
+        WB.appendChild(el);
+        const s0 = w.s - 0.03, nx = W[i + 1];
+        let e0 = nx ? Math.min(nx.s - 0.03, w.e + 0.45) : Math.min(D.vend - 0.05, w.e + 0.5);
+        if (nx && nx.s - 0.03 - e0 < 0.3) e0 = nx.s - 0.03;
+        tl.set(el, { opacity: 1 }, s0);
+        if (MODE === "tex") {
+          tl.fromTo(el, { scale: 0.86 }, { scale: 1, duration: 0.16, ease: "back.out(2)", ...IR }, s0);
+          tl.fromTo(el, { backgroundPosition: (i * 37 % 100) + "% 50%" }, { backgroundPosition: ((i * 37 % 100) + 40) + "% 50%", duration: Math.max(0.2, e0 - s0), ease: "none", ...IR }, s0);
+        } else if (MODE === "emph") {
+          tl.fromTo(el, { scale: 0.96 }, { scale: 1, duration: 0.14, ease: "power2.out", ...IR }, s0);
+        } else if (MODE === "bold") {
+          tl.fromTo(el, { scale: 1.18, filter: "blur(4px)" }, { scale: 1, filter: "blur(0px)", duration: 0.12, ease: "power3.out", ...IR }, s0);
+        } else {
+          tl.fromTo(el, { y: 6 }, { y: 0, duration: 0.12, ease: "power2.out", ...IR }, s0);
+        }
+        tl.set(el, { opacity: 0 }, e0);
+      });
+      if (D.grain) {
+        for (let t = 0; t < D.vend; t += 0.1) tl.set("#grain", { backgroundPosition: ((t * 977) % 240) + "px " + ((t * 613) % 240) + "px" }, t);
+        tl.fromTo("#leak", { x: 0, opacity: 0.4 }, { x: 260, opacity: 1, duration: Math.max(1, D.vend), ease: "sine.inOut", ...IR }, 0);
+        D.segs.slice(1).forEach((sg) => tl.fromTo("#ar", { x: -10, filter: "brightness(1.6)" }, { x: 0, filter: "brightness(1)", duration: 0.18, ease: "power2.out", ...IR }, sg.start));
+      }
+      tl.fromTo("#end", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out", ...IR }, D.vend - 0.05);
+      tl.fromTo(["#end .logo", "#end .a", "#end .b"], { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out", stagger: 0.1, ...IR }, D.vend + 0.15);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

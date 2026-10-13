@@ -37,6 +37,11 @@ Run `python cve.py gallery` to open a picker page, or just ask Claude *"show me 
 | <img src="styles/clean-podcast/preview.jpg" width="150"> | **Clean Podcast** `clean-podcast` | brand bands, two-line hook, face-tracked panel, karaoke captions, lower-half cards, logo strip | interview podcasts, advice, compilations |
 | <img src="styles/cinema-bars/preview.jpg" width="150"> | **Cinema Bars** `cinema-bars` | black bars, one-line title with accent words, 4:3 video with slow push-in, clean white captions | emotional or thoughtful moments, quotes |
 | <img src="styles/cinema-bars-fullframe/preview.jpg" width="150"> | **Cinema Bars + Full-frame Graphics** `cinema-bars-fullframe` | Cinema Bars plus big kinetic graphics inside the frame over the blurred shot | compilations, key numbers and named ideas |
+| <img src="styles/one-word/preview.jpg" width="150"> | **One Word** `one-word` | dark letterbox, full 16:9 shot, one huge word at a time filled with a moving blue texture | punchy statements, big-name podcast clips |
+| <img src="styles/one-word-minimal/preview.jpg" width="150"> | **One Word Minimal** `one-word-minimal` | dark letterbox, one small clean white word at a time | calm, emotional talks; trending sound added in the app |
+| <img src="styles/mono-emphasis/preview.jpg" width="150"> | **Mono Emphasis** `mono-emphasis` | black & white shot, short phrases, the key word big and heavy | celebrity / expert interviews, advice with numbers |
+| <img src="styles/sepia-hype/preview.jpg" width="150"> | **Sepia Hype** `sepia-hype` | black letterbox, warm sepia film grade, grain, light leak, bold word pops, flash on cuts | sports and hype edits cut to a beat |
+| <img src="styles/editorial-depth/preview.jpg" width="150"> | **Editorial Depth** `editorial-depth` | speaker auto cut out — magazine typography (didone caps, red script, italic serif) behind and in front of the head, following it | wisdom / philosophy clips, premium channels |
 
 Every style renders in **9:16** and, where supported, **4:5** (1080x1350) — Instagram and Facebook crop 9:16 to 4:5
 in the feed, which hides titles and logos; the 4:5 versions keep everything in frame.
@@ -48,7 +53,7 @@ styles are welcome.
 
 ## Install
 
-Requirements: Python 3.10+, Node 18+ (for `npx hyperframes`), ffmpeg on `PATH`, optionally an NVIDIA GPU for fast transcription.
+Requirements: Python 3.10+ (MediaPipe for the speaker cut-out in `editorial-depth`), Node 18+ (for `npx hyperframes`), ffmpeg on `PATH`, optionally an NVIDIA GPU for fast transcription.
 
 ```bash
 git clone https://github.com/<you>/claude-video-editor
@@ -89,6 +94,7 @@ with a headless Chrome). Offline / locked-down machines: put `gsap.min.js` in `v
 * `gfx`: `[trigger word, title, subtitle]` — the card appears when the trigger word is spoken.
 * `cx`: horizontal centre (0–1280) of the person to follow when several faces are in shot.
 * `styles`: which styles to render this short in (default: `styles` in `project.json`).
+* `music`: a file in `music/`, or `"none"` for speech only (add a trending sound in the Instagram / TikTok app — better reach, no rights problems).
 * `*word*` in `btitle` = accent colour in the Cinema Bars styles.
 
 ## Using it with Claude

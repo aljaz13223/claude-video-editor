@@ -1,0 +1,29 @@
+{
+  "id": "sepia-hype",
+  "order": 6,
+  "name": "Sepia Hype",
+  "tagline": "Warm sepia film look, one bold word at a time",
+  "description": "Black letterbox with the 16:9 shot in the middle, graded warm sepia with crushed contrast, film grain, a glowing edge line and a drifting light leak. One heavy white word at a time pops in with a blur-snap; each cut hits with a small flash and shake. The classic sports / hype fan-edit look \u2014 made for clips cut to a beat.",
+  "best_for": [
+    "sports and fight clips",
+    "hype and motivation edits cut to a beat",
+    "legendary quotes",
+    "adding a trending sound in the app"
+  ],
+  "preview": "preview.jpg",
+  "template": "../one-word/template.html",
+  "format_4x5": "../one-word/format_4x5.css",
+  "video": {
+    "crop_w": 1280,
+    "out_w": 1080,
+    "out_h": 608,
+    "face_track": false,
+    "grade": "colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131,eq=contrast=1.22:brightness=-0.03:saturation=1.15,vignette=PI/5"
+  },
+  "flags": {
+    "caption_mode": "bold",
+    "edge_line": true,
+    "grain": true,
+    "bg": "#000"
+  }
+}

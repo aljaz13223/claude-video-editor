@@ -1,0 +1,7 @@
+/* 4:5 (1080x1350): video centred 371-979, word positions follow */
+html, body, #root { height: 1350px !important; }
+#ar { top: 371px; } #tb { height: 371px; } #bb { top: 979px; }
+.min .w { top: 645px; } .tex .w { top: 585px; }
+
+.bold .w { top: 593px; } #edge { top: 368px; } #grain { top: 371px; } #leak { height: 371px; }
+.emph .w { top: 607px; }

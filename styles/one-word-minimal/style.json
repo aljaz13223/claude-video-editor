@@ -1,0 +1,13 @@
+{
+  "id": "one-word-minimal",
+  "order": 5,
+  "name": "One Word Minimal",
+  "tagline": "One small white word at a time, nothing else",
+  "description": "Dark navy letterbox with the full 16:9 shot in the middle and no title. One small, clean white word at a time in the middle of the frame. Calm and documentary-like; lets the speaker carry the clip.",
+  "best_for": ["calm, emotional talks", "wisdom and life advice", "letting a strong speaker breathe", "adding a trending sound in the app"],
+  "preview": "preview.jpg",
+  "template": "../one-word/template.html",
+  "format_4x5": "../one-word/format_4x5.css",
+  "video": { "crop_w": 1280, "out_w": 1080, "out_h": 608, "face_track": false, "grade": "eq=contrast=1.04:saturation=1.0" },
+  "flags": { "caption_mode": "minimal" }
+}

@@ -32,3 +32,19 @@ Measure positions as pixels on a 1080-wide canvas (multiply the image coordinate
   (caption, graphic, end) and put them **side by side with the reference**. Fix the biggest difference, repeat (max 3 rounds).
 - Save the best frame as `styles/<new-id>/preview.jpg` so it appears in the gallery.
 - Show the user reference vs result and ask what to change. Record their corrections in the style's `README.md`.
+
+## Reading a reel, not just a screenshot
+A screenshot shows one frame; the style is in the timing. If the user sends a reel link and a browser is available,
+open it, pin the `<video>` element full-viewport with a little JS, seek to ~10 timestamps and zoom-screenshot each.
+Note: how often text is on screen (many premium edits leave the face clean ~40 % of the time), whether words build
+one by one, which layouts rotate, what sits behind vs in front of the speaker, and the grade. Never download or reuse
+the creator's footage, audio or logo — only the editing ideas.
+
+## Text behind the speaker
+Set `"depth": true` in the style's `flags`: `cve build` runs `cve/matte.py` (MediaPipe selfie segmenter) and adds
+`assets/person.webm` (the speaker with alpha) and `assets/track.json` (head position at 10 fps) — see
+`styles/editorial-depth/template.html` for the layer order (shot → text behind → person → text in front).
+
+## Sounds from Instagram / TikTok
+"Original audio" pages belong to other creators and are usually copyrighted music. Don't rip them. Render with
+`"music": "none"` and let the user tap "Use audio" in the app when posting.

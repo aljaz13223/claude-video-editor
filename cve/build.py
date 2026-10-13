@@ -117,6 +117,12 @@ def run(P, ids=(), formats=("9x16", "4x5"), reuse_video=False, only_styles=()):
                 vf = f"crop={v['crop_w']}:720:x='{{x0}}':y=0,scale={v['out_w']}:{v['out_h']}:flags=lanczos," + v.get("grade", "null")
                 concat(P, inp, vf, out + "/assets/aroll.mp4")
             Dv = dict(D, **st.get("flags", {}))
+            if st.get("flags", {}).get("depth"):   # text behind the speaker: person matte + head track
+                tj = out + "/assets/track.json"
+                if not (reuse_video and os.path.exists(tj) and os.path.exists(out + "/assets/person.webm")):
+                    from . import matte
+                    matte.make(out + "/assets")
+                Dv["track"] = json.load(open(tj))
             tpl = os.path.join(st["_dir"], st["template"]) if os.path.exists(os.path.join(st["_dir"], st["template"])) else os.path.join(TEMPLATES, st["template"])
             if "9x16" in formats: write(P, out, tpl, Dv); made.append(st_id)
             if "4x5" in formats and st.get("format_4x5"):

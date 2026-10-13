@@ -1,0 +1,13 @@
+{
+  "id": "mono-emphasis",
+  "order": 7,
+  "name": "Mono Emphasis",
+  "tagline": "Black & white, short phrases with one big key word",
+  "description": "Dark navy letterbox with the 16:9 shot graded black and white. Captions in short 2-3 word phrases in the middle of the frame; the key word of each phrase (a number, or the strongest word) is much bigger and heavier. Serious, premium interview look.",
+  "best_for": ["celebrity and expert interviews", "advice with numbers and key words", "serious, premium channels"],
+  "preview": "preview.jpg",
+  "template": "../one-word/template.html",
+  "format_4x5": "../one-word/format_4x5.css",
+  "video": { "crop_w": 1280, "out_w": 1080, "out_h": 608, "face_track": false, "grade": "hue=s=0,eq=contrast=1.12:brightness=-0.02" },
+  "flags": { "caption_mode": "emphasis" }
+}
