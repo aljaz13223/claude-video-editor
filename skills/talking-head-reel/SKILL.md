@@ -1,9 +1,9 @@
 ---
-name: viral-reel-editor
+name: talking-head-reel
 description: Edit a talking-head reel / short (9:16) in the 2026 viral style — cut silences and bad takes from a word-level transcript, plan scenes with the user (captions / captions + UI / half screen / full screen), build motion graphics from a visual guide, sound-design from an SFX library. Use for "make this a viral reel", "edit my talking head", "plan the scenes", "sound design this".
 ---
 
-# viral-reel-editor
+# talking-head-reel
 
 Bad AI edits come from bad training, not a bad model. This skill is the training: a **visual guide**
 (`references/visual-guide.md`) and a **sound design guide** (`references/sound-design.md`). The user plans the scenes, you build.

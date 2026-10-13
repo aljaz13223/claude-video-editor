@@ -8,3 +8,4 @@ vendor/
 *.mov
 *.wav
 !skills/viral-reel-editor/sfx/*.wav
+examples/demo/

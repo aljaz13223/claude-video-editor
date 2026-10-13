@@ -33,7 +33,7 @@ the person directing the edit. Keep project-specific rules in your project's own
 ## Sound
 - Speech is always clearly on top. Music: -15 dB under speech, -9 dB in pauses, -6 dB on the end card.
 - Choose the music by mood of the clip; use the part of the track that builds towards the end.
-- No sound effects on podcast intros (they felt cheap); in fast reels use SFX sparingly (see `skills/viral-reel-editor`).
+- No sound effects on podcast intros (they felt cheap); in fast reels use SFX sparingly (see `skills/talking-head-reel`).
 
 ## Branding and formats
 - Keep the brand strip (logo + name + tagline) under the video in the classic look.

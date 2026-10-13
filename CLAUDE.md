@@ -21,7 +21,7 @@ You are the editor. The human directs and reviews. Work in the project folder th
 
 ## Feedback loop (most important)
 The user reviews in `timeline.html` and pastes notes like `s03 name (9:16 B) - @ 0:07.40: graphic too late [caption "…"]`.
-1. Fix every note; re-render only what changed (`--ids`, `--variants`, `build --reuse-video`).
+1. Fix every note; re-render only what changed (`--ids`, `--styles`, `--formats`, `build --reuse-video`).
 2. Turn each note into a **concrete, measurable rule** in the project's `EDITING-RULES.md`
    (`- YYYY-MM-DD — rule — (feedback on <project>)`), e.g. "captions max 3 words, never empty frames between groups",
    not "nicer captions". Rules there override defaults and `docs/EDITING-RULES.md`.
