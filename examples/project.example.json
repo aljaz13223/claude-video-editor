@@ -1,0 +1,23 @@
+{
+  "name": "My Podcast",
+  "language": "en",
+  "host": "Jane Host",
+  "host_role": "host",
+  "raw_dir": "raw",
+  "transcripts_dir": "transcripts",
+  "music_dir": "music",
+  "final_dir": "final",
+  "brand": {
+    "name": "mypodcast.com",
+    "tagline": "THE PODCAST WITH JANE HOST",
+    "end_line": "Full conversation on",
+    "logo": "logo.svg",
+    "bg": "#0b1520",
+    "accent": "#1fb8b4",
+    "highlight": "#3ddc5a",
+    "accent_b": "#33d6cc"
+  },
+  "music": { "speech_db": -15, "gap_db": -9, "end_db": -6 },
+  "end_card_seconds": 1.8,
+  "hyperframes": "hyperframes@0.8.141"
+}

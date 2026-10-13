@@ -1,0 +1,12 @@
+/* 4:5 (1080x1350) layout for the classic look: title 0-200, video 200-1200, brand strip 1200-1350 */
+html, body, #root { height: 1350px !important; }
+#ar { top: 200px; height: 1000px; object-position: 50% 30%; }
+#topband { height: 200px; } #fadeT { top: 200px; }
+#dimg, #shade, #flash { top: 200px; height: 1000px; }
+#hook { top: 30px; } #hook .l1, #hook .l2 { font-size: 62px; }
+.lt { top: 222px; } .badge { top: 218px; }
+.cap { top: 955px; font-size: 62px; }
+.gfx { top: 640px; }
+#botband { top: 1200px; }
+#brand { top: 1216px; gap: 14px; } #brand .logo { width: 50px; height: 50px; } #brand .w { font-size: 42px; }
+#brand2 { top: 1290px; font-size: 22px; letter-spacing: 8px; }

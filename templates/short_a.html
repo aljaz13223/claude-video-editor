@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="{{lang}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Montserrat:wght@800;900&family=Nunito:wght@300&display=block" rel="stylesheet" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: {{bg}}; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: {{bg}}; }
+      #panel { position: absolute; left: 0; top: 285px; width: 1080px; height: 1350px; overflow: hidden; z-index: 1; }
+      #ar { position: absolute; left: 0; top: 285px; width: 1080px; height: 1350px; object-fit: cover; z-index: 1; transform-origin: 50% 38%; }
+      #ui { position: absolute; inset: 0; z-index: 5; }
+      #glow { position: absolute; left: -200px; right: -200px; top: -300px; height: 900px; background: radial-gradient(ellipse at 50% 40%, rgba({{accent_rgb}},0.28), rgba({{bg_rgb}},0) 60%); }
+      #topband { position: absolute; left: 0; right: 0; top: 0; height: 285px; background: {{bg}}; }
+      #fadeT { position: absolute; left: 0; right: 0; top: 285px; height: 70px; background: linear-gradient(180deg, {{bg}}, rgba({{bg_rgb}},0)); }
+      #dimg { position: absolute; left: 0; right: 0; top: 285px; height: 1350px; background: rgba(6,12,20,0.40); backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px); opacity: 0; }
+      #botband { position: absolute; left: 0; right: 0; top: 1635px; bottom: 0; background: {{bg}}; }
+      #shade { position: absolute; left: 0; right: 0; top: 285px; height: 1350px; background: linear-gradient(180deg, rgba({{bg_rgb}},0.55) 0%, rgba({{bg_rgb}},0) 18%, rgba({{bg_rgb}},0) 62%, rgba({{bg_rgb}},0.8) 100%); }
+      #hook { position: absolute; left: 40px; right: 40px; top: 58px; text-align: center; font-family: "Poppins"; font-weight: 800; line-height: 1.06; letter-spacing: -1px; }
+      #hook .l1 { font-size: 78px; color: #fff; display: block; }
+      #hook .l2 { font-size: 78px; color: {{accent}}; display: block; }
+      #hook span { display: inline-block; }
+      .lt { position: absolute; left: 44px; top: 318px; display: flex; align-items: center; gap: 14px; background: rgba({{bg_rgb}},0.82); border: 2px solid rgba({{accent_rgb}},0.55); border-radius: 999px; padding: 12px 30px 12px 16px; opacity: 0; white-space: nowrap; }
+      .lt i { width: 20px; height: 20px; border-radius: 50%; background: {{highlight}}; box-shadow: 0 0 16px {{highlight}}; }
+      .lt .n { font-family: "Poppins"; font-weight: 800; font-size: 38px; color: #fff; }
+      .lt .r { font-family: "Poppins"; font-weight: 600; font-size: 27px; color: {{accent}}; }
+      .badge { position: absolute; right: 44px; top: 312px; width: 92px; height: 92px; border-radius: 50%; background: {{accent}}; color: {{bg}}; font-family: "Poppins"; font-weight: 800; font-size: 54px; display: flex; align-items: center; justify-content: center; opacity: 0; box-shadow: 0 0 30px rgba({{accent_rgb}},0.6); }
+      .cap { position: absolute; left: 50px; right: 50px; top: 1330px; text-align: center; font-family: "Montserrat"; font-weight: 900; font-size: 68px; line-height: 1.12; color: #fff; opacity: 0;
+        text-shadow: 0 0 3px #000, 0 5px 0 rgba(0,0,0,0.85), 0 10px 28px rgba(0,0,0,0.7); }
+      .cap span { display: inline-block; margin: 0 9px; transform-origin: 50% 75%; }
+      .gfx { position: absolute; left: 0; right: 0; top: 960px; height: 340px; opacity: 0; }
+      .gfx .dep { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba({{accent_rgb}},0.9) 0, rgba({{accent_rgb}},0) 70%); filter: blur(5px); opacity: 0.35; }
+      .gfx .ring { position: absolute; top: 92px; width: 96px; height: 96px; border-radius: 50%; border: 2px solid rgba({{accent_rgb}},0.6); display: flex; align-items: center; justify-content: center; }
+      .gfx .ring i { width: 14px; height: 14px; border-radius: 50%; background: {{accent}}; box-shadow: 0 0 14px {{accent}}; }
+      .gfx .card { position: absolute; left: 50%; top: 36px; width: max-content; max-width: 800px; transform: translateX(-50%); padding: 26px 44px 28px; border-radius: 26px; text-align: center;
+        background: linear-gradient(160deg, rgba(22,42,56,0.94), rgba({{bg_rgb}},0.94)); border: 1.5px solid rgba({{accent_rgb}},0.45); box-shadow: 0 24px 60px rgba(0,0,0,0.45); }
+      .gfx .t { font-family: "Poppins"; font-weight: 800; font-size: 52px; line-height: 1.08; color: #fff; letter-spacing: -0.5px; }
+      .gfx .t span { display: inline-block; margin: 0 7px; }
+      .gfx .t span.n { color: {{accent}}; }
+      .gfx .bar { width: 120px; height: 4px; border-radius: 2px; background: {{accent}}; margin: 16px auto 0; }
+      .gfx .s { font-family: "Poppins"; font-weight: 600; font-size: 28px; line-height: 1.2; color: rgba(214,240,238,0.88); margin-top: 14px; }
+      #brand { position: absolute; left: 0; right: 0; top: 1668px; display: flex; align-items: center; justify-content: center; gap: 18px; }
+      #brand .logo { width: 64px; height: 64px; }
+      #brand .w { font-family: "Nunito"; font-weight: 300; font-size: 52px; color: #fff; letter-spacing: 1px; }
+      #brand2 { position: absolute; left: 0; right: 0; top: 1752px; text-align: center; font-family: "Poppins"; font-weight: 700; font-size: 26px; letter-spacing: 9px; color: {{accent}}; }
+      #flash { position: absolute; left: 0; right: 0; top: 285px; height: 1350px; background: rgba(185,255,244,0.9); mix-blend-mode: screen; opacity: 0; }
+      #end { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba({{accent_rgb}},0.25), {{bg}} 62%), {{bg}}; opacity: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      #end .logo { width: 230px; height: 230px; filter: drop-shadow(0 0 40px rgba({{accent_rgb}},0.5)); }
+      #end .a { font-family: "Poppins"; font-weight: 600; font-size: 44px; color: rgba(255,255,255,0.85); margin-top: 50px; }
+      #end .b { font-family: "Nunito"; font-weight: 300; font-size: 110px; color: #fff; margin-top: 6px; }
+      #end .c { font-family: "Poppins"; font-weight: 700; font-size: 30px; letter-spacing: 10px; color: {{accent}}; margin-top: 26px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="__TOTAL__" data-width="1080" data-height="1920">
+      <video id="ar" class="clip" src="assets/aroll.mp4" data-start="0" data-duration="__VEND__" data-track-index="0" data-has-audio="true" playsinline></video>
+      <audio id="bed" class="clip" src="assets/bed.wav" data-start="0" data-duration="__TOTAL__" data-track-index="2"></audio>
+      <div id="ui" class="clip" data-start="0" data-duration="__TOTAL__" data-track-index="3">
+        <div id="shade"></div>
+        <div id="dimg"></div>
+        <div id="topband"><div id="glow"></div></div>
+        <div id="fadeT"></div>
+        <div id="botband"></div>
+        <div id="hook"><span class="l1">__H1__</span><span class="l2">__H2__</span></div>
+        <div id="lts"></div><div id="caps"></div><div id="gfxs"></div>
+        <div id="brand">
+          <img class="logo" src="assets/logo.svg" alt="">
+          <span class="w">{{brand}}</span>
+        </div>
+        <div id="brand2">{{tagline}}</div>
+        <div id="flash"></div>
+        <div id="end">
+          <img class="logo" src="assets/logo.svg" alt="">
+          <div class="a">{{end_line}}</div>
+          <div class="b">{{brand}}</div>
+          <div class="c">{{tagline}}</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const D = __DATA__;
+      const tl = gsap.timeline({ paused: true });
+      const IR = { immediateRender: false };
+      tl.fromTo("#hook span", { y: 40, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.6)", stagger: 0.12 }, 0.0);
+      tl.fromTo("#ar", { scale: 1.12 }, { scale: 1.0, duration: 0.6, ease: "power3.out" }, 0);
+      let sentStart = true, k = 0;
+      D.words.forEach((w, i) => {
+        if (sentStart && i > 0) { k++; tl.set("#ar", { scale: k % 2 ? 1.075 : 1.0 }, w.s - 0.02); }
+        sentStart = /[.?!]$/.test(w.t);
+      });
+      D.segs.forEach((sg, i) => { if (i > 0) { tl.set("#ar", { scale: 1.0 }, sg.start); tl.fromTo("#flash", { opacity: 0.5 }, { opacity: 0, duration: 0.2, ...IR }, sg.start); } });
+      const LT = document.getElementById("lts"); let num = 0;
+      D.segs.forEach((sg, i) => {
+        const show = D.comp || i === 0 || D.segs[i - 1].who !== sg.who;
+        if (!show) return;
+        const el = document.createElement("div"); el.className = "lt";
+        el.innerHTML = '<i></i><span class="n"></span><span class="r"></span>';
+        el.querySelector(".n").textContent = sg.who; el.querySelector(".r").textContent = sg.role;
+        LT.appendChild(el);
+        const t0 = sg.start + (i === 0 ? 0.6 : 0.15), t1 = Math.min(sg.start + sg.dur - 0.2, t0 + 3.0);
+        tl.fromTo(el, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.35, ease: "power3.out", ...IR }, t0);
+        tl.to(el, { opacity: 0, duration: 0.25 }, t1);
+        if (D.comp && sg.who !== D.host) {
+          num++; const b = document.createElement("div"); b.className = "badge"; b.textContent = num; LT.appendChild(b);
+          tl.fromTo(b, { opacity: 0, scale: 0.3, rotation: -40 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.4, ease: "back.out(2)", ...IR }, sg.start + 0.1);
+          tl.to(b, { opacity: 0, scale: 0.6, duration: 0.2 }, sg.start + sg.dur - 0.15);
+        }
+      });
+      const groups = []; let g = [];
+      D.words.forEach((w) => { g.push(w); if (g.length === 4 || /[,.?!:]$/.test(w.t)) { groups.push(g); g = []; } });
+      if (g.length) groups.push(g);
+      const CP = document.getElementById("caps");
+      groups.forEach((gr, gi) => {
+        const el = document.createElement("div"); el.className = "cap";
+        gr.forEach((w) => { const sp = document.createElement("span"); sp.textContent = w.t; el.appendChild(sp); });
+        CP.appendChild(el);
+        const s0 = gr[0].s - 0.04, nx = groups[gi + 1];
+        const e0 = nx ? Math.min(nx[0].s - 0.04, gr[gr.length - 1].e + 0.7) : Math.min(D.vend - 0.05, gr[gr.length - 1].e + 0.6);
+        tl.fromTo(el, { opacity: 0, y: 16, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.1, ease: "power2.out", ...IR }, s0);
+        tl.set(el, { opacity: 0 }, e0);
+        [...el.children].forEach((sp, wi) => {
+          const ws = gr[wi].s, we = wi < gr.length - 1 ? gr[wi + 1].s : e0;
+          tl.set(sp, { color: "{{highlight}}" }, ws);
+          tl.fromTo(sp, { scale: 1 }, { scale: 1.1, duration: 0.07, yoyo: true, repeat: 1, ...IR }, ws);
+          tl.set(sp, { color: "#ffffff" }, we);
+        });
+      });
+      const GX = document.getElementById("gfxs");
+      D.gfx.sort((a, b) => a.t - b.t).forEach((x, gi) => {
+        const nx = D.gfx[gi + 1];
+        const d = Math.max(1.6, Math.min(3.2, (nx ? nx.t - 0.25 : D.vend - 0.1) - x.t));
+        const el = document.createElement("div"); el.className = "gfx";
+        el.innerHTML = '<div class="dep" style="left:150px;top:20px;width:70px;height:70px"></div><div class="dep" style="right:170px;top:250px;width:90px;height:90px"></div><div class="dep" style="left:430px;top:290px;width:40px;height:40px"></div>' +
+          '<div class="ring" style="left:46px"><i></i></div><div class="ring" style="right:46px"><i></i></div>' +
+          '<div class="card"><div class="t"></div><div class="bar"></div>' + (x.sub ? '<div class="s"></div>' : "") + "</div>";
+        const T = el.querySelector(".t");
+        x.title.split(" ").forEach((w) => { const sp = document.createElement("span"); sp.textContent = w; if (/\d/.test(w)) sp.className = "n"; T.appendChild(sp); });
+        if (x.sub) el.querySelector(".s").textContent = x.sub;
+        GX.appendChild(el);
+        const t0 = x.t, t1 = x.t + d;
+        tl.fromTo("#dimg", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out", ...IR }, t0);
+        tl.to("#dimg", { opacity: 0, duration: 0.3, ease: "power2.in" }, t1 - 0.3);
+        tl.set(el, { opacity: 1 }, t0);
+        tl.fromTo(el.querySelector(".card"), { opacity: 0, y: 40, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.6)", ...IR }, t0);
+        tl.fromTo(T.children, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out", stagger: 0.08, ...IR }, t0 + 0.12);
+        tl.fromTo(el.querySelector(".bar"), { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power3.out", ...IR }, t0 + 0.3);
+        if (x.sub) tl.fromTo(el.querySelector(".s"), { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out", ...IR }, t0 + 0.45);
+        el.querySelectorAll(".ring").forEach((r, k) => {
+          tl.fromTo(r, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)", ...IR }, t0 + 0.2 + k * 0.08);
+          tl.fromTo(r, { y: 0 }, { y: k ? -14 : 14, duration: d, ease: "sine.inOut", ...IR }, t0);
+        });
+        el.querySelectorAll(".dep").forEach((p, k) => tl.fromTo(p, { y: 0, opacity: 0 }, { y: -26 + k * 9, opacity: 0.35, duration: d, ease: "sine.inOut", ...IR }, t0));
+        [...T.children].forEach((sp) => { const m = sp.textContent.match(/^(\d+)(.*)$/); if (!m) return; const N = +m[1];
+          for (let k = 0; k <= 10; k++) tl.set(sp, { textContent: Math.round(N * k / 10) + m[2] }, t0 + 0.12 + k * 0.07); });
+        tl.to(el, { opacity: 0, y: -16, duration: 0.25, ease: "power2.in" }, t1 - 0.25);
+        tl.set(el, { opacity: 0 }, t1 + 0.01);
+      });
+      tl.fromTo("#end", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out", ...IR }, D.vend - 0.05);
+      tl.fromTo("#end .logo", { scale: 0, rotation: -50 }, { scale: 1, rotation: 0, duration: 0.5, ease: "back.out(1.7)", ...IR }, D.vend + 0.05);
+      tl.fromTo(["#end .a", "#end .b", "#end .c"], { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out", stagger: 0.1, ...IR }, D.vend + 0.25);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

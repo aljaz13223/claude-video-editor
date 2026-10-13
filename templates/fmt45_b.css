@@ -1,0 +1,5 @@
+/* 4:5 (1080x1350) layout for the cinematic look: title above video (to 280), video 300-1110, name below */
+html, body, #root { height: 1350px !important; }
+#ar { top: 300px; } #tb { height: 300px; } #bb { top: 1110px; } #vig { top: 300px; }
+#title { bottom: 1070px; } .cap { top: 744px; } #wm { top: 1068px; } .nm { top: 1152px; }
+#blurp { top: 300px; } .fg { top: 300px; }

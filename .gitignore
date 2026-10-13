@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+models/
+vendor/
+.DS_Store
+# project folders (footage, renders) never belong in the repo
+*.mp4
+*.mov
+*.wav
+!skills/viral-reel-editor/sfx/*.wav

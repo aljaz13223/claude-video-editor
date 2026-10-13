@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timeline · __PROJECT__</title>
+<style>
+  :root {
+    --bg: #15171c; --panel: #1c1f26; --panel2: #232731; --line: #2e3340; --ink: #e7e9ee; --mut: #8a90a0;
+    --acc: #33d6cc; --red: #ff5a5f; --vid: #3a6ea5; --cap: #8a63d2; --gfx: #e0a43a; --fx: #4caf7d; --lt: #c2577a; --wsp: #5fb3ff; --wmu: #f08a4b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 13px/1.4 "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+  button, select, input, textarea { font: inherit; color: var(--ink); }
+  button { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+  button:hover { border-color: #4a5163; }
+  button.pri { background: var(--acc); color: #0b1418; border-color: var(--acc); font-weight: 600; }
+  select, input[type=text], textarea { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+  #app { display: grid; grid-template-rows: 44px minmax(0, 1fr) 330px; height: 100vh; }
+  header { display: flex; align-items: center; gap: 10px; padding: 0 12px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 14px; margin: 0 8px 0 0; font-weight: 600; }
+  header .sp { flex: 1; }
+  .tabs { display: flex; gap: 4px; }
+  .tabs button.on { background: #2d3b45; border-color: var(--acc); color: var(--acc); }
+  #mid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; min-height: 0; }
+  #view { display: flex; align-items: center; justify-content: center; background: #0d0e11; min-height: 0; padding: 10px; position: relative; }
+  #vid { max-height: 100%; max-width: 100%; background: #000; box-shadow: 0 0 0 1px var(--line); }
+  #nofile { position: absolute; color: var(--mut); text-align: center; display: none; }
+  #insp { background: var(--panel); border-left: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  #insp section { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  #insp h2 { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--mut); margin: 0 0 6px; font-weight: 600; }
+  .kv { display: grid; grid-template-columns: 70px 1fr; gap: 3px 8px; }
+  .kv b { color: var(--mut); font-weight: 500; }
+  #notes { flex: 1; overflow: auto; padding: 8px 12px; }
+  .note { background: var(--panel2); border: 1px solid var(--line); border-left: 3px solid var(--red); border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; cursor: pointer; }
+  .note .h { display: flex; justify-content: space-between; color: var(--mut); font-size: 12px; }
+  .note .x { background: none; border: 0; color: var(--mut); padding: 0 4px; }
+  #addbox { display: flex; gap: 6px; padding: 8px 12px; border-top: 1px solid var(--line); }
+  #addbox textarea { flex: 1; resize: none; height: 54px; }
+  #tl { background: var(--panel); border-top: 1px solid var(--line); display: grid; grid-template-rows: 38px minmax(0, 1fr); min-height: 0; }
+  #bar { display: flex; align-items: center; gap: 8px; padding: 0 10px; border-bottom: 1px solid var(--line); }
+  #tc { font-variant-numeric: tabular-nums; font-size: 15px; min-width: 120px; color: var(--acc); }
+  #bar .sp { flex: 1; }
+  #bar label { color: var(--mut); display: flex; align-items: center; gap: 6px; }
+  #tracks { display: grid; grid-template-columns: 112px minmax(0, 1fr); min-height: 0; }
+  #labels { border-right: 1px solid var(--line); }
+  #labels div, .row { height: 32px; border-bottom: 1px solid var(--line); }
+  #labels div { display: flex; align-items: center; gap: 7px; padding: 0 10px; color: var(--mut); font-size: 12px; }
+  #labels div i { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  #labels .rl { height: 24px; }
+  #scroll { overflow-x: auto; overflow-y: hidden; position: relative; }
+  #lane { position: relative; }
+  #ruler { height: 24px; border-bottom: 1px solid var(--line); position: relative; cursor: ew-resize; background: #191c22; }
+  .tick { position: absolute; top: 0; height: 100%; border-left: 1px solid #343a48; color: var(--mut); font-size: 10px; padding-left: 3px; }
+  .tick.s { height: 6px; top: 18px; }
+  .row { position: relative; }
+  .blk { position: absolute; top: 4px; height: 24px; border-radius: 4px; padding: 0 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; line-height: 24px; color: #fff; cursor: pointer; border: 1px solid rgba(255,255,255,0.15); }
+  .blk:hover { filter: brightness(1.25); }
+  .blk.sel { outline: 2px solid #fff; }
+  .mk { position: absolute; top: 4px; width: 2px; height: 24px; }
+  .mk span { position: absolute; top: -1px; left: 3px; font-size: 9px; color: var(--mut); white-space: nowrap; }
+  canvas.wave { position: absolute; left: 0; top: 0; height: 32px; }
+  #ph { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--red); pointer-events: none; z-index: 5; }
+  #ph::before { content: ""; position: absolute; top: 0; left: -6px; border: 7px solid transparent; border-top-color: var(--red); }
+  .flag { position: absolute; top: 0; width: 2px; height: 100%; background: rgba(255,90,95,0.55); z-index: 4; pointer-events: none; }
+  .flag b { position: absolute; top: 2px; left: 2px; background: var(--red); color: #fff; font-size: 9px; padding: 0 3px; border-radius: 3px; }
+  #toast { position: fixed; left: 50%; bottom: 350px; transform: translateX(-50%); background: var(--acc); color: #0b1418; padding: 8px 14px; border-radius: 8px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  #help { color: var(--mut); font-size: 11px; }
+  #exp { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 50; }
+  #exp div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; width: min(720px, 92vw); }
+  #exp textarea { width: 100%; height: 300px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Timeline · __PROJECT__</h1>
+    <select id="sel"></select>
+    <div class="tabs" id="vtabs"></div>
+    <span class="sp"></span>
+    <span id="help">Space = play · ←/→ = 1 frame · Shift+←/→ = 1 s · M = note</span>
+    <button class="pri" id="copy">Copy notes (0)</button>
+  </header>
+  <div id="mid">
+    <div id="view"><video id="vid" controls playsinline></video><div id="nofile">Video could not be loaded.<br>Open timeline.html from the project folder.</div></div>
+    <aside id="insp">
+      <section><h2>At playhead</h2>
+        <div class="kv" id="now"></div></section>
+      <section><h2>Short</h2><div class="kv" id="info"></div></section>
+      <div id="notes"></div>
+      <div id="addbox"><textarea id="ntext" placeholder="Describe the problem here… (Enter = save)"></textarea><button class="pri" id="nadd">+ Note</button></div>
+    </aside>
+  </div>
+  <div id="tl">
+    <div id="bar">
+      <button id="play">▶</button><span id="tc">0:00.00</span>
+      <button id="prevb" title="Previous item">⏮</button><button id="nextb" title="Next item">⏭</button>
+      <span class="sp"></span>
+      <label>Zoom <input type="range" id="zoom" min="10" max="300" value="40"></label>
+      <button id="fit">Fit</button>
+    </div>
+    <div id="tracks">
+      <div id="labels"></div>
+      <div id="scroll"><div id="lane"><div id="ruler"></div><div id="rows"></div><div id="ph"></div></div></div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<div id="exp"><div><p style="margin:0 0 8px">Copy and paste this to Claude:</p><textarea id="expt" readonly></textarea><p style="text-align:right;margin:8px 0 0"><button id="expc">Close</button></p></div></div>
+<script>
+const DATA = __DATA__;
+const PROJECT = "__PROJECT__";
+const $ = (id) => document.getElementById(id);
+const vid = $("vid");
+const KEY = "cve-timeline:" + PROJECT;
+let notes = []; try { notes = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(notes)); } catch (e) {} };
+let cur = DATA[0], variant = Object.keys(cur.variants)[0] || "A", pps = 40, sel = null;
+const TR = [
+  { k: "vid", n: "Video", c: "--vid" }, { k: "cap", n: "Captions", c: "--cap" }, { k: "gfx", n: "Graphics", c: "--gfx" },
+  { k: "fx", n: "Zoom / cuts", c: "--fx" }, { k: "lt", n: "Names", c: "--lt" }, { k: "wsp", n: "Speech", c: "--wsp" }, { k: "wmu", n: "Music", c: "--wmu" },
+];
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmt = (t) => { t = Math.max(0, t); const m = Math.floor(t / 60); return m + ":" + (t % 60).toFixed(2).padStart(5, "0"); };
+const toast = (m) => { const e = $("toast"); e.textContent = m; e.style.opacity = 1; setTimeout(() => (e.style.opacity = 0), 1400); };
+const isB = () => variant.startsWith("B");
+
+// ---- derive timeline items (same logic as the templates) ----
+function items(S) {
+  const it = { vid: [], cap: [], gfx: [], fx: [], lt: [] };
+  const pal = ["#3a6ea5", "#2f8f83", "#7a5bb5", "#a5703a", "#3a8fa5", "#8f3a6e"]; const who = {};
+  S.segs.forEach((g, i) => {
+    if (!(g.who in who)) who[g.who] = pal[Object.keys(who).length % pal.length];
+    it.vid.push({ s: g.start, e: g.start + g.dur, t: g.who || "clip", d: (g.who || "") + (g.role ? " · " + g.role : ""), col: who[g.who] });
+  });
+  it.vid.push({ s: S.vend, e: S.total, t: "End card", d: "Full episode card", col: "#3b4252" });
+  // captions
+  const per = isB() ? 3 : 4, gr = []; let g = [];
+  S.words.forEach((w) => { g.push(w); if (g.length === per || /[,.?!:]$/.test(w.t)) { gr.push(g); g = []; } });
+  if (g.length) gr.push(g);
+  gr.forEach((q, i) => {
+    const nx = gr[i + 1]; const s0 = q[0].s - 0.04;
+    let e0 = nx ? Math.min(nx[0].s - 0.04, q[q.length - 1].e + 0.7) : Math.min(S.vend - 0.05, q[q.length - 1].e + 0.6);
+    if (isB() && nx && nx[0].s - 0.04 - e0 < 0.35) e0 = nx[0].s - 0.04;
+    it.cap.push({ s: s0, e: e0, t: q.map((w) => w.t).join(" "), d: q.map((w) => w.t + " (" + w.s.toFixed(2) + ")").join("  ") });
+  });
+  // graphics
+  const showG = !isB() || (cur.variants[variant] && cur.variants[variant].full);
+  if (showG) {
+    const G = [...S.gfx].sort((a, b) => a.t - b.t);
+    G.forEach((x, i) => {
+      const nx = G[i + 1];
+      const d = isB() ? Math.max(1.8, Math.min(3.2, (nx ? nx.t - 0.3 : S.vend - 0.15) - x.t)) : Math.max(1.6, Math.min(3.2, (nx ? nx.t - 0.25 : S.vend - 0.1) - x.t));
+      it.gfx.push({ s: x.t, e: x.t + d, t: x.title, d: x.title + (x.sub ? " — " + x.sub : "") + (isB() ? " (over blurred video)" : " (card, lower half)") });
+    });
+  }
+  // zoom / cuts
+  if (isB()) {
+    S.segs.forEach((g) => it.fx.push({ s: g.start, e: g.start + g.dur, t: "push-in 1.00→1.06", d: "slow push-in over the clip", col: "#2e6b4f" }));
+  } else {
+    let st = true, k = 0;
+    S.words.forEach((w, i) => { if (st && i > 0) { k++; it.fx.push({ m: w.s - 0.02, t: k % 2 ? "zoom 1.075" : "zoom 1.0", d: "jump zoom at sentence start: " + w.t }); } st = /[.?!]$/.test(w.t); });
+    S.segs.forEach((g, i) => { if (i > 0) it.fx.push({ m: g.start, t: "cut", d: "cut + flash", col: "#fff" }); });
+    it.fx.push({ m: 0, t: "zoom-out 1.12→1", d: "opening zoom-out" });
+  }
+  // names
+  S.segs.forEach((g, i) => {
+    if (isB()) {
+      if (!(i === 0 || S.segs[i - 1].who !== g.who)) return;
+      let e = g.start + g.dur; for (let j = i + 1; j < S.segs.length && S.segs[j].who === g.who; j++) e = S.segs[j].start + S.segs[j].dur;
+      it.lt.push({ s: g.start + 0.3, e: e - 0.25, t: g.who, d: g.who + " · " + g.role + " (under video)" });
+    } else {
+      if (!(S.comp || i === 0 || S.segs[i - 1].who !== g.who)) return;
+      const t0 = g.start + (i === 0 ? 0.6 : 0.15), t1 = Math.min(g.start + g.dur - 0.2, t0 + 3.0);
+      it.lt.push({ s: t0, e: t1, t: g.who, d: g.who + " · " + g.role + " (name tag, top left)" });
+    }
+  });
+  return it;
+}
+let IT = null;
+
+// ---- draw ----
+function build() {
+  IT = items(cur);
+  const W = Math.ceil(cur.total * pps) + 40;
+  $("lane").style.width = W + "px";
+  const L = $("labels"); L.innerHTML = '<div class="rl"></div>';
+  TR.forEach((t) => { const d = document.createElement("div"); d.innerHTML = `<i style="background:${css(t.c)}"></i>${t.n}`; L.appendChild(d); });
+  // ruler
+  const R = $("ruler"); R.innerHTML = "";
+  const step = pps > 120 ? 0.5 : pps > 50 ? 1 : pps > 20 ? 2 : 5;
+  for (let t = 0; t <= cur.total + 0.001; t += step) {
+    const d = document.createElement("div"); d.className = "tick"; d.style.left = t * pps + "px";
+    d.textContent = Math.abs(t - Math.round(t)) < 1e-6 ? fmt(t).replace(/\.00$/, "") : ""; R.appendChild(d);
+    if (pps > 60) for (let k = 1; k < 5; k++) { const s = document.createElement("div"); s.className = "tick s"; s.style.left = (t + (k * step) / 5) * pps + "px"; R.appendChild(s); }
+  }
+  const rows = $("rows"); rows.innerHTML = "";
+  TR.forEach((t) => {
+    const r = document.createElement("div"); r.className = "row"; r.dataset.k = t.k; rows.appendChild(r);
+    if (t.k === "wsp" || t.k === "wmu") {
+      const w = t.k === "wsp" ? cur.wsp : cur.wmu; const cv = document.createElement("canvas"); cv.className = "wave";
+      cv.width = W; cv.height = 32; cv.style.width = W + "px"; r.appendChild(cv);
+      const g = cv.getContext("2d"); g.fillStyle = css(t.c);
+      for (let i = 0; i < w.length; i++) { const x = (i / 25) * pps, h = Math.max(1, w[i] * 26); g.fillRect(x, 16 - h / 2, Math.max(1, pps / 25 - 0.3), h); }
+      return;
+    }
+    (IT[t.k] || []).forEach((b, i) => {
+      if (b.m !== undefined) {
+        const m = document.createElement("div"); m.className = "mk"; m.style.left = b.m * pps + "px"; m.style.background = b.col || css(t.c);
+        m.title = fmt(b.m) + " · " + b.d; if (pps > 70) m.innerHTML = `<span>${b.t}</span>`; m.onclick = () => seek(b.m); r.appendChild(m); return;
+      }
+      const e = document.createElement("div"); e.className = "blk"; e.style.left = b.s * pps + "px"; e.style.width = Math.max(3, (b.e - b.s) * pps - 1) + "px";
+      e.style.background = b.col || css(t.c); e.textContent = b.t; e.title = fmt(b.s) + "–" + fmt(b.e) + "  " + b.d;
+      e.onclick = (ev) => { ev.stopPropagation(); document.querySelectorAll(".blk.sel").forEach((x) => x.classList.remove("sel")); e.classList.add("sel"); sel = { k: t.k, b }; seek(b.s + 0.01); };
+      r.appendChild(e);
+    });
+  });
+  drawFlags(); tick();
+}
+function drawFlags() {
+  document.querySelectorAll(".flag").forEach((f) => f.remove());
+  notes.filter((n) => n.sid === cur.id && n.v === variant).forEach((n, i) => {
+    const f = document.createElement("div"); f.className = "flag"; f.style.left = n.t * pps + "px"; f.innerHTML = `<b>${i + 1}</b>`; $("lane").appendChild(f);
+  });
+  renderNotes();
+}
+function at(t) {
+  const o = {};
+  for (const k of ["vid", "cap", "gfx", "lt"]) { const b = (IT[k] || []).find((b) => b.s !== undefined && t >= b.s && t < b.e); if (b) o[k] = b; }
+  return o;
+}
+function tick() {
+  const t = vid.currentTime || 0;
+  $("ph").style.left = t * pps + "px"; $("tc").textContent = fmt(t);
+  const o = at(t), N = $("now");
+  N.innerHTML = `<b>Time</b><span>${fmt(t)}</span><b>Clip</b><span>${o.vid ? o.vid.d || o.vid.t : "—"}</span><b>Caption</b><span>${o.cap ? o.cap.t : "—"}</span><b>Graphic</b><span>${o.gfx ? o.gfx.d : "—"}</span><b>Name</b><span>${o.lt ? o.lt.t : "—"}</span>`;
+  const sc = $("scroll"), x = t * pps;
+  if (!vid.paused && (x < sc.scrollLeft + 40 || x > sc.scrollLeft + sc.clientWidth - 80)) sc.scrollLeft = x - 120;
+}
+function seek(t) { vid.currentTime = Math.max(0, Math.min(cur.total, t)); tick(); }
+function loadShort(i) {
+  cur = DATA[i]; if (!cur.variants[variant]) variant = Object.keys(cur.variants)[0] || "A";
+  const V = $("vtabs"); V.innerHTML = "";
+  Object.entries(cur.variants).forEach(([k, v]) => { const b = document.createElement("button"); b.textContent = v.label + (v.full ? " +graphics" : ""); if (k === variant) b.className = "on"; b.onclick = () => { variant = k; loadShort(DATA.indexOf(cur)); }; V.appendChild(b); });
+  const src = cur.variants[variant] ? cur.variants[variant].src : "";
+  if (vid.getAttribute("src") !== src) { vid.src = src; }
+  $("nofile").style.display = "none";
+  $("info").innerHTML = `<b>ID</b><span>${cur.id} · ${cur.name}</span><b>Title</b><span>${isB() ? cur.btitle : cur.hook}</span><b>Length</b><span>${fmt(cur.total)} (speech until ${fmt(cur.vend)})</span><b>Music</b><span>${cur.music || "—"}</span><b>Graphics</b><span>${cur.gfx.length}</span>`;
+  build(); fit();
+}
+function fit() { pps = Math.max(10, ($("scroll").clientWidth - 30) / cur.total); $("zoom").value = Math.round(pps); build(); }
+// ---- notes ----
+function addNote(text) {
+  text = (text || "").trim(); if (!text) { $("ntext").focus(); return; }
+  const t = +(vid.currentTime || 0).toFixed(2), o = at(t);
+  const ctx = [o.cap ? 'caption "' + o.cap.t + '"' : "", o.gfx ? 'graphic "' + o.gfx.t + '"' : "", o.vid ? "clip " + o.vid.t : ""].filter(Boolean).join(", ");
+  notes.push({ sid: cur.id, name: cur.name, v: variant, vl: cur.variants[variant] ? cur.variants[variant].label : variant, t, text, ctx });
+  notes.sort((a, b) => (a.sid + a.v).localeCompare(b.sid + b.v) || a.t - b.t);
+  save(); $("ntext").value = ""; drawFlags(); toast("Note added @ " + fmt(t));
+}
+function renderNotes() {
+  const box = $("notes"); box.innerHTML = "";
+  const mine = notes.filter((n) => n.sid === cur.id && n.v === variant);
+  if (!mine.length) box.innerHTML = '<p style="color:var(--mut)">No notes for this short yet. Pause on a problem, type a note and press Enter (or M).</p>';
+  mine.forEach((n, i) => {
+    const d = document.createElement("div"); d.className = "note";
+    d.innerHTML = `<div class="h"><span>${i + 1} · ${fmt(n.t)}</span><button class="x" title="Delete">✕</button></div><div></div><div style="color:var(--mut);font-size:11px"></div>`;
+    d.children[1].textContent = n.text; d.children[2].textContent = n.ctx;
+    d.onclick = () => seek(n.t);
+    d.querySelector(".x").onclick = (e) => { e.stopPropagation(); notes.splice(notes.indexOf(n), 1); save(); drawFlags(); };
+    box.appendChild(d);
+  });
+  $("copy").textContent = `Copy notes (${notes.length})`;
+}
+function exportText() {
+  if (!notes.length) return "";
+  let out = `Notes for ${PROJECT}:\n`; let last = "";
+  notes.forEach((n) => { const h = `${n.sid} ${n.name} (${n.vl})`; if (h !== last) { out += `\n${h}\n`; last = h; } out += `- @ ${fmt(n.t)}: ${n.text}${n.ctx ? "   [" + n.ctx + "]" : ""}\n`; });
+  return out;
+}
+$("copy").onclick = async () => {
+  const t = exportText(); if (!t) { toast("No notes"); return; }
+  try { await navigator.clipboard.writeText(t); toast("Copied — paste it into the chat"); } catch (e) { $("expt").value = t; $("exp").style.display = "flex"; $("expt").select(); }
+};
+$("expc").onclick = () => ($("exp").style.display = "none");
+$("nadd").onclick = () => addNote($("ntext").value);
+$("ntext").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); addNote($("ntext").value); } e.stopPropagation(); });
+// ---- controls ----
+DATA.forEach((s, i) => { const o = document.createElement("option"); o.value = i; o.textContent = `${s.id} · ${s.name}`; $("sel").appendChild(o); });
+$("sel").onchange = (e) => loadShort(+e.target.value);
+$("play").onclick = () => (vid.paused ? vid.play() : vid.pause());
+vid.addEventListener("play", () => ($("play").textContent = "❚❚"));
+vid.addEventListener("pause", () => ($("play").textContent = "▶"));
+vid.addEventListener("timeupdate", tick); vid.addEventListener("seeked", tick);
+vid.addEventListener("error", () => ($("nofile").style.display = "block"));
+(function loop() { if (!vid.paused) tick(); requestAnimationFrame(loop); })();
+$("zoom").oninput = (e) => { const t = vid.currentTime; pps = +e.target.value; build(); $("scroll").scrollLeft = t * pps - 200; };
+$("fit").onclick = fit;
+const scrub = (e) => { const r = $("lane").getBoundingClientRect(); seek((e.clientX - r.left) / pps); };
+$("ruler").addEventListener("mousedown", (e) => { scrub(e); const mv = (ev) => scrub(ev); window.addEventListener("mousemove", mv); window.addEventListener("mouseup", () => window.removeEventListener("mousemove", mv), { once: true }); });
+$("rows").addEventListener("click", scrub);
+const jump = (dir) => {
+  const t = vid.currentTime, pts = [];
+  for (const k of ["vid", "cap", "gfx", "lt"]) (IT[k] || []).forEach((b) => b.s !== undefined && pts.push(b.s));
+  pts.sort((a, b) => a - b); const n = dir > 0 ? pts.find((p) => p > t + 0.05) : [...pts].reverse().find((p) => p < t - 0.05);
+  if (n !== undefined) seek(n + 0.01);
+};
+$("prevb").onclick = () => jump(-1); $("nextb").onclick = () => jump(1);
+window.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+  if (e.code === "Space") { e.preventDefault(); vid.paused ? vid.play() : vid.pause(); }
+  else if (e.key === "ArrowRight") { e.preventDefault(); vid.pause(); seek(vid.currentTime + (e.shiftKey ? 1 : 1 / 30)); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); vid.pause(); seek(vid.currentTime - (e.shiftKey ? 1 : 1 / 30)); }
+  else if (e.key.toLowerCase() === "m") { e.preventDefault(); vid.pause(); $("ntext").focus(); }
+});
+window.addEventListener("resize", () => build());
+loadShort(0);
+</script>
+</body>
+</html>

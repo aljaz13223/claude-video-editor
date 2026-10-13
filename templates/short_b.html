@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="{{lang}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Cormorant+Garamond:wght@600&family=Nunito:wght@300&display=block" rel="stylesheet" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+      #ar { position: absolute; left: 0; top: 566px; width: 1080px; height: 810px; object-fit: cover; z-index: 1; transform-origin: 50% 40%; }
+      #ui { position: absolute; inset: 0; z-index: 5; }
+      #tb { position: absolute; left: 0; right: 0; top: 0; height: 566px; background: #000; }
+      #bb { position: absolute; left: 0; right: 0; top: 1376px; bottom: 0; background: #000; }
+      #vig { position: absolute; left: 0; right: 0; top: 566px; height: 810px; background: radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.45) 100%), linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0) 14%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.35)); }
+      #title { position: absolute; left: 60px; right: 60px; bottom: 1380px; text-align: center; font-family: "Montserrat"; font-weight: 700; font-size: 50px; line-height: 1.18; color: #fff; letter-spacing: -0.3px; }
+      #title span { display: inline-block; margin: 0 6px; }
+      #title span.a { color: {{accent_b}}; font-weight: 800; }
+      .cap { position: absolute; left: 80px; right: 80px; top: 1010px; text-align: center; font-family: "Montserrat"; font-weight: 800; font-size: 46px; line-height: 1.15; color: #fff; opacity: 0;
+        text-shadow: 0 2px 2px rgba(0,0,0,0.9), 0 4px 18px rgba(0,0,0,0.75); }
+      .cap span { display: inline-block; margin: 0 6px; }
+      #wm { position: absolute; left: 0; right: 0; top: 1334px; text-align: center; font-family: "Cormorant Garamond"; font-weight: 600; font-size: 24px; letter-spacing: 4px; color: rgba(255,255,255,0.72); }
+      .nm { position: absolute; left: 0; right: 0; top: 1418px; text-align: center; opacity: 0; }
+      .nm .n { font-family: "Montserrat"; font-weight: 700; font-size: 38px; color: #fff; }
+      .nm .r { font-family: "Montserrat"; font-weight: 600; font-size: 27px; color: rgba(255,255,255,0.55); margin-top: 6px; }
+      #blurp { position: absolute; left: 0; top: 566px; width: 1080px; height: 810px; backdrop-filter: blur(30px) brightness(0.55); -webkit-backdrop-filter: blur(30px) brightness(0.55); background: rgba(0,0,0,0.12); opacity: 0; }
+      #fgs { position: absolute; inset: 0; }
+      .fg { position: absolute; left: 0; right: 0; top: 566px; height: 810px; overflow: hidden; opacity: 0; }
+      .fg .in { position: absolute; left: 0; right: 0; top: -566px; height: 1920px; }
+      .fg .dep { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba({{accent_b_rgb}},0.85) 0, rgba({{accent_b_rgb}},0) 70%); filter: blur(8px); }
+      .fg .ring { position: absolute; border-radius: 50%; border: 2px solid rgba({{accent_b_rgb}},0.55); }
+      .fg .ring i { position: absolute; left: 50%; top: -7px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: {{accent_b}}; box-shadow: 0 0 16px {{accent_b}}; }
+      .fg .box { position: absolute; left: 70px; right: 70px; top: 971px; transform: translateY(-50%); text-align: center; }
+      .fg .k { font-family: "Montserrat"; font-weight: 700; font-size: 30px; letter-spacing: 8px; color: {{accent_b}}; }
+      .fg .t { font-family: "Montserrat"; font-weight: 800; font-size: 96px; line-height: 1.02; color: #fff; letter-spacing: -2px; margin-top: 26px; text-shadow: 0 10px 40px rgba(0,0,0,0.45); }
+      .fg .t span { display: inline-block; margin: 0 12px; }
+      .fg .bar { width: 180px; height: 6px; border-radius: 3px; background: {{accent_b}}; margin: 34px auto 0; }
+      .fg .s { font-family: "Montserrat"; font-weight: 600; font-size: 40px; line-height: 1.25; color: rgba(255,255,255,0.85); margin-top: 28px; }
+      #end { position: absolute; inset: 0; background: #000; opacity: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      #end .logo { width: 200px; height: 200px; }
+      #end .a { font-family: "Montserrat"; font-weight: 600; font-size: 40px; color: rgba(255,255,255,0.8); margin-top: 46px; }
+      #end .b { font-family: "Nunito"; font-weight: 300; font-size: 104px; color: #fff; margin-top: 6px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="__TOTAL__" data-width="1080" data-height="1920">
+      <video id="ar" class="clip" src="assets/aroll.mp4" data-start="0" data-duration="__VEND__" data-track-index="0" data-has-audio="true" playsinline></video>
+      <audio id="bed" class="clip" src="assets/bed.wav" data-start="0" data-duration="__TOTAL__" data-track-index="2"></audio>
+      <div id="ui" class="clip" data-start="0" data-duration="__TOTAL__" data-track-index="3">
+        <div id="vig"></div>
+        <div id="tb"></div>
+        <div id="bb"></div>
+        <div id="title"></div>
+        <div id="caps"></div>
+        <div id="wm">{{brand_upper}}</div>
+        <div id="nms"></div>
+        <div id="blurp"></div><div id="fgs"></div>
+        <div id="end">
+          <img class="logo" src="assets/logo.svg" alt="">
+          <div class="a">{{end_line}}</div>
+          <div class="b">{{brand}}</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const D = __DATA__;
+      const tl = gsap.timeline({ paused: true });
+      const IR = { immediateRender: false };
+      const TT = document.getElementById("title");
+      D.btitle.split(" ").forEach((w) => { const sp = document.createElement("span"); const acc = /^\*.*\*[.,!?]?$/.test(w);
+        sp.textContent = w.replace(/\*/g, ""); if (acc) sp.className = "a"; TT.appendChild(sp); });
+      tl.fromTo("#title span", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out", stagger: 0.06 }, 0);
+      D.segs.forEach((sg) => { tl.fromTo("#ar", { scale: 1.0 }, { scale: 1.06, duration: sg.dur, ease: "none", ...IR }, sg.start); });
+      tl.fromTo("#ar", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 0);
+      const NM = document.getElementById("nms");
+      D.segs.forEach((sg, i) => {
+        if (!(i === 0 || D.segs[i - 1].who !== sg.who)) return;
+        const el = document.createElement("div"); el.className = "nm";
+        el.innerHTML = '<div class="n"></div><div class="r"></div>';
+        el.querySelector(".n").textContent = sg.who; el.querySelector(".r").textContent = sg.role; NM.appendChild(el);
+        let e = sg.start + sg.dur; for (let j = i + 1; j < D.segs.length && D.segs[j].who === sg.who; j++) e = D.segs[j].start + D.segs[j].dur;
+        tl.fromTo(el, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", ...IR }, sg.start + 0.3);
+        tl.to(el, { opacity: 0, duration: 0.25 }, e - 0.25);
+      });
+      const groups = []; let g = [];
+      D.words.forEach((w) => { g.push(w); if (g.length === 3 || /[,.?!:]$/.test(w.t)) { groups.push(g); g = []; } });
+      if (g.length) groups.push(g);
+      const CP = document.getElementById("caps");
+      groups.forEach((gr, gi) => {
+        const el = document.createElement("div"); el.className = "cap";
+        gr.forEach((w) => { const sp = document.createElement("span"); sp.textContent = w.t; el.appendChild(sp); });
+        CP.appendChild(el);
+        const s0 = gr[0].s - 0.04, nx = groups[gi + 1];
+        let e0 = nx ? Math.min(nx[0].s - 0.04, gr[gr.length - 1].e + 0.7) : Math.min(D.vend - 0.05, gr[gr.length - 1].e + 0.6);
+        if (nx && nx[0].s - 0.04 - e0 < 0.35) e0 = nx[0].s - 0.04;
+        tl.set(el, { opacity: 1 }, s0);
+        tl.fromTo(el, { scale: 0.97 }, { scale: 1, duration: 0.1, ease: "power2.out", ...IR }, s0);
+        tl.set(el, { opacity: 0 }, e0);
+      });
+      if (D.bfull) {
+        const FG = document.getElementById("fgs");
+        D.gfx.sort((a, b) => a.t - b.t).forEach((x, gi) => {
+          const nx = D.gfx[gi + 1];
+          const d = Math.max(1.8, Math.min(3.2, (nx ? nx.t - 0.3 : D.vend - 0.15) - x.t));
+          const sg = D.segs.filter((q) => q.start <= x.t + 0.01).pop();
+          const el = document.createElement("div"); el.className = "fg";
+          el.innerHTML = '<div class="in"><div class="dep" style="left:120px;top:640px;width:110px;height:110px;opacity:.35"></div><div class="dep" style="right:110px;top:1190px;width:140px;height:140px;opacity:.3"></div><div class="dep" style="left:300px;top:1250px;width:56px;height:56px;opacity:.4"></div><div class="dep" style="right:280px;top:640px;width:46px;height:46px;opacity:.45"></div>' +
+            '<div class="ring" style="left:-110px;top:660px;width:320px;height:320px"><i></i></div><div class="ring" style="right:-130px;top:960px;width:360px;height:360px"><i></i></div>' +
+            '<div class="box"><div class="k"></div><div class="t"></div><div class="bar"></div>' + (x.sub ? '<div class="s"></div>' : "") + "</div></div>";
+          el.querySelector(".k").textContent = (sg && sg.who ? sg.who : "{{brand}}").toUpperCase();
+          const T = el.querySelector(".t");
+          x.title.split(" ").forEach((w) => { const sp = document.createElement("span"); sp.textContent = w; T.appendChild(sp); });
+          if (x.sub) el.querySelector(".s").textContent = x.sub;
+          FG.appendChild(el);
+          const t0 = x.t, t1 = x.t + d;
+          tl.fromTo("#blurp", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out", ...IR }, t0);
+          tl.to("#blurp", { opacity: 0, duration: 0.35, ease: "power2.in" }, t1 - 0.35);
+          tl.fromTo(["#nms", "#wm", "#vig"], { opacity: 1 }, { opacity: 0, duration: 0.3, ease: "power2.out", ...IR }, t0);
+          tl.to(["#nms", "#wm", "#vig"], { opacity: 1, duration: 0.3, ease: "power2.in" }, t1 - 0.3);
+          tl.fromTo("#caps", { y: 0 }, { y: 420, duration: 0.35, ease: "power3.out", ...IR }, t0);
+          tl.to("#caps", { y: 0, duration: 0.3, ease: "power3.in" }, t1 - 0.3);
+          tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out", ...IR }, t0 + 0.05);
+          tl.fromTo(el.querySelector(".k"), { opacity: 0, y: 20, letterSpacing: "20px" }, { opacity: 1, y: 0, letterSpacing: "8px", duration: 0.5, ease: "power3.out", ...IR }, t0 + 0.1);
+          tl.fromTo(T.children, { opacity: 0, y: 60, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.4)", stagger: 0.1, ...IR }, t0 + 0.18);
+          tl.fromTo(el.querySelector(".bar"), { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power3.out", ...IR }, t0 + 0.45);
+          if (x.sub) tl.fromTo(el.querySelector(".s"), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", ...IR }, t0 + 0.6);
+          el.querySelectorAll(".ring").forEach((r, k) => {
+            tl.fromTo(r, { opacity: 0, scale: 0.6, rotation: k ? 30 : -30 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.6, ease: "power3.out", ...IR }, t0 + 0.1);
+            tl.fromTo(r, { rotation: 0 }, { rotation: k ? -50 : 50, duration: d, ease: "none", ...IR }, t0 + 0.7);
+          });
+          el.querySelectorAll(".dep").forEach((p, k) => tl.fromTo(p, { y: 30 }, { y: -40 - k * 12, duration: d, ease: "sine.inOut", ...IR }, t0));
+          tl.to(el, { opacity: 0, scale: 1.04, duration: 0.3, ease: "power2.in" }, t1 - 0.3);
+          tl.set(el, { opacity: 0 }, t1 + 0.01);
+        });
+      }
+      tl.fromTo("#end", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out", ...IR }, D.vend - 0.05);
+      tl.fromTo(["#end .logo", "#end .a", "#end .b"], { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out", stagger: 0.1, ...IR }, D.vend + 0.15);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
