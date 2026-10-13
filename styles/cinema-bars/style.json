@@ -1,0 +1,13 @@
+{
+  "id": "cinema-bars",
+  "order": 2,
+  "name": "Cinema Bars",
+  "tagline": "Black bars, one-line title, clean white captions",
+  "description": "Black background with a one-line title above a full-width 4:3 video; accent words in the title are coloured. Slow push-in on every clip, minimal white captions in the middle of the frame, a small watermark and the speaker's name under the video. Calm and cinematic.",
+  "best_for": ["emotional or thoughtful moments", "motivational quotes", "faceless-style repost channels", "a premium, minimal feel"],
+  "preview": "preview.jpg",
+  "template": "template.html",
+  "format_4x5": "format_4x5.css",
+  "video": { "crop_w": 960, "out_w": 1080, "out_h": 810, "face_track": false, "grade": "eq=contrast=1.06:saturation=1.04:brightness=-0.01" },
+  "flags": { "bfull": false }
+}

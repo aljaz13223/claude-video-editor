@@ -2,31 +2,91 @@
  {
   "id": "s01",
   "name": "biggest-paradox",
-  "hook": ["THE BIGGEST PARADOX", "OF OUR TIME"],
+  "hook": [
+   "THE BIGGEST PARADOX",
+   "OF OUR TIME"
+  ],
   "btitle": "The biggest *PARADOX* of our *TIME.*",
   "who": "Dr. Guest Name",
   "role": "anthropologist",
-  "segs": [["episode-12", 1564.3, 1604.4]],
-  "txt": ["Corrected caption text for the segment, exactly as spoken. Fix names and spelling here."],
-  "gfx": [["paradox", "THE BIGGEST PARADOX", ""], ["epidemic", "WHO", "declared an epidemic of loneliness"]],
+  "segs": [
+   [
+    "episode-12",
+    1564.3,
+    1604.4
+   ]
+  ],
+  "txt": [
+   "Corrected caption text for the segment, exactly as spoken. Fix names and spelling here."
+  ],
+  "gfx": [
+   [
+    "paradox",
+    "THE BIGGEST PARADOX",
+    ""
+   ],
+   [
+    "epidemic",
+    "WHO",
+    "declared an epidemic of loneliness"
+   ]
+  ],
   "music": "calm-piano.mp3",
-  "cx": [840],
-  "variants": ["A", "B"]
+  "cx": [
+   840
+  ],
+  "styles": [
+   "clean-podcast",
+   "cinema-bars"
+  ]
  },
  {
   "id": "s02",
   "name": "what-is-success",
   "comp": true,
-  "hook": ["WHAT IS SUCCESS", "4 GUESTS 4 ANSWERS"],
+  "hook": [
+   "WHAT IS SUCCESS",
+   "4 GUESTS 4 ANSWERS"
+  ],
   "btitle": "What is real *SUCCESS?* Four guests answer.",
   "segs": [
-   ["episode-03", 120.0, 124.5, "Jane Host", "host"],
-   ["episode-07", 801.2, 809.9, "Guest One", "singer"],
-   ["episode-09", 455.0, 462.3, "Guest Two", "founder"]
+   [
+    "episode-03",
+    120.0,
+    124.5,
+    "Jane Host",
+    "host"
+   ],
+   [
+    "episode-07",
+    801.2,
+    809.9,
+    "Guest One",
+    "singer"
+   ],
+   [
+    "episode-09",
+    455.0,
+    462.3,
+    "Guest Two",
+    "founder"
+   ]
   ],
-  "gfx": [["love", "WITH LOVE", "success follows"]],
-  "bfull": true,
-  "cx": [640, 700, 560],
-  "variants": ["A", "B"]
+  "gfx": [
+   [
+    "love",
+    "WITH LOVE",
+    "success follows"
+   ]
+  ],
+  "cx": [
+   640,
+   700,
+   560
+  ],
+  "styles": [
+   "clean-podcast",
+   "cinema-bars-fullframe"
+  ]
  }
 ]

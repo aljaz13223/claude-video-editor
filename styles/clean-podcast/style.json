@@ -1,0 +1,13 @@
+{
+  "id": "clean-podcast",
+  "order": 1,
+  "name": "Clean Podcast",
+  "tagline": "Branded bands, karaoke captions, lower-half cards",
+  "description": "Two-line hook title on a solid brand band, face-tracked 4:5 panel, karaoke captions with the active word highlighted, name tags, numbered guests in compilations, graphic cards in the lower half over a dimmed and blurred video, logo strip and end card.",
+  "best_for": ["interview podcasts", "advice and quotes", "compilations with several guests", "a recognisable channel look"],
+  "preview": "preview.jpg",
+  "template": "template.html",
+  "format_4x5": "format_4x5.css",
+  "video": { "crop_w": 576, "out_w": 1080, "out_h": 1350, "face_track": true, "grade": "eq=contrast=1.04:saturation=1.06" },
+  "flags": {}
+}

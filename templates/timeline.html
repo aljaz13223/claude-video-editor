@@ -123,7 +123,7 @@ const TR = [
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const fmt = (t) => { t = Math.max(0, t); const m = Math.floor(t / 60); return m + ":" + (t % 60).toFixed(2).padStart(5, "0"); };
 const toast = (m) => { const e = $("toast"); e.textContent = m; e.style.opacity = 1; setTimeout(() => (e.style.opacity = 0), 1400); };
-const isB = () => variant.startsWith("B");
+const isB = () => !!(cur.variants[variant] && cur.variants[variant].look === "B");
 
 // ---- derive timeline items (same logic as the templates) ----
 function items(S) {
@@ -241,7 +241,7 @@ function seek(t) { vid.currentTime = Math.max(0, Math.min(cur.total, t)); tick()
 function loadShort(i) {
   cur = DATA[i]; if (!cur.variants[variant]) variant = Object.keys(cur.variants)[0] || "A";
   const V = $("vtabs"); V.innerHTML = "";
-  Object.entries(cur.variants).forEach(([k, v]) => { const b = document.createElement("button"); b.textContent = v.label + (v.full ? " +graphics" : ""); if (k === variant) b.className = "on"; b.onclick = () => { variant = k; loadShort(DATA.indexOf(cur)); }; V.appendChild(b); });
+  Object.entries(cur.variants).forEach(([k, v]) => { const b = document.createElement("button"); b.textContent = v.label; if (k === variant) b.className = "on"; b.onclick = () => { variant = k; loadShort(DATA.indexOf(cur)); }; V.appendChild(b); });
   const src = cur.variants[variant] ? cur.variants[variant].src : "";
   if (vid.getAttribute("src") !== src) { vid.src = src; }
   $("nofile").style.display = "none";

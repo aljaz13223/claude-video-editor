@@ -2,11 +2,11 @@
 timeline: editor-style review page (preview + tracks: video, captions, graphics, zoom/cuts, names, speech, music)
           with time-stamped notes you copy back to Claude.  ->  <project>/timeline.html
 sheet:    contact sheet of every finished short (8 frames each)  ->  qa/sheet_N.jpg"""
-import json, os, subprocess
+import glob, json, os, subprocess
 import numpy as np
 from .project import TEMPLATES, ffmpeg
+from .styles import load_style
 
-VAR = [("A", "build", "9:16"), ("B", "build_b", "9:16 B"), ("A45", "build_45a", "4:5"), ("B45", "build_45b", "4:5 B")]
 
 
 def peaks(path, fps=25):
@@ -26,14 +26,16 @@ def timeline(P, ids=()):
         if not os.path.exists(tj): continue
         T = json.load(open(tj, encoding="utf-8"))
         variants = {}
-        for key, root, label in VAR:
-            f = f"{root}/{s['id']}/final.mp4"
-            if os.path.exists(P.p(f)):
-                variants[key] = {"src": f, "label": label, "full": key.startswith("B") and bool(T.get("bfull"))}
+        for f in sorted(glob.glob(P.p("build", s["id"], "*", "final.mp4"))):
+            var = os.path.basename(os.path.dirname(f)); st, _, fmt = var.partition("@")
+            try: name = load_style(st)["name"]; full = bool(load_style(st).get("flags", {}).get("bfull"))
+            except SystemExit: name, full = st, False
+            variants[var] = {"src": os.path.relpath(f, P.dir).replace("\\", "/"), "label": name + (" 4:5" if fmt else " 9:16"), "full": full,
+                             "look": "B" if st.startswith("cinema") else "A"}
         data.append({"id": s["id"], "name": s["name"], "hook": " ".join(T.get("hook", [])), "btitle": T.get("btitle", "").replace("*", ""),
                      "music": s.get("music", ""), "total": T["total"], "vend": T["vend"], "segs": T["segs"], "words": T["words"],
                      "gfx": T["gfx"], "comp": T.get("comp", False), "variants": variants,
-                     "wsp": peaks(P.p("build", s["id"], "assets", "aroll.mp4")), "wmu": peaks(P.p("build", s["id"], "assets", "bed.wav"))})
+                     "wsp": peaks(next(iter(glob.glob(P.p("build", s["id"], "*", "assets", "aroll.mp4"))), "")), "wmu": peaks(P.p("build", s["id"], "bed.wav"))})
     tpl = open(os.path.join(TEMPLATES, "timeline.html"), encoding="utf-8").read()
     out = P.p("timeline.html")
     open(out, "w", encoding="utf-8").write(tpl.replace("__PROJECT__", P.cfg["name"]).replace("__DATA__", json.dumps(data, ensure_ascii=False)))
@@ -45,8 +47,9 @@ def sheet(P, ids=()):
     import cv2
     rows = []
     for s in P.select(ids):
-        p = P.p("build", s["id"], "final.mp4")
-        if not os.path.exists(p): continue
+        fs = sorted(glob.glob(P.p("build", s["id"], "*", "final.mp4")))
+        if not fs: continue
+        p = fs[0]
         cap = cv2.VideoCapture(p); n = int(cap.get(7)); fps = cap.get(5) or 30; t = []
         for k in np.linspace(5, max(6, n - 70), 8).astype(int):
             cap.set(1, k); ok, f = cap.read()

@@ -8,6 +8,8 @@
   python cve.py verify <project>               re-transcribe cut clips and diff against captions
   python cve.py timeline|sheet <project>       review page / contact sheets
   python cve.py plan <words.json> <out.html>   scene planner for a talking-head reel
+  python cve.py styles                         list edit styles
+  python cve.py gallery [out.html]             style picker page with reference images
 """
 import argparse, glob, json, os, shutil, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -57,28 +59,29 @@ def main():
     for c in ("init", "cut", "crop", "build", "music", "render", "all", "verify", "timeline", "sheet"):
         p = sp.add_parser(c); p.add_argument("project"); p.add_argument("--ids", default="")
         if c == "cut": p.add_argument("--force", action="store_true")
-        if c in ("build", "all"): p.add_argument("--variants", default="A,B,45"); p.add_argument("--reuse-video", action="store_true")
-        if c == "render": p.add_argument("--variants", default="A,B,A45,B45")
+        if c in ("build", "all", "render"): p.add_argument("--styles", default="", help="only these style ids"); p.add_argument("--formats", default="9x16,4x5")
+        if c in ("build", "all"): p.add_argument("--reuse-video", action="store_true")
     p = sp.add_parser("transcribe"); p.add_argument("project"); p.add_argument("files", nargs="*"); p.add_argument("--all", action="store_true")
     p.add_argument("--lang", default=None); p.add_argument("--model", default="large-v3"); p.add_argument("--batch", type=int, default=0); p.add_argument("--force", action="store_true")
+    sp.add_parser("styles"); p = sp.add_parser("gallery"); p.add_argument("out", nargs="?", default="styles.html")
     p = sp.add_parser("plan"); p.add_argument("words"); p.add_argument("out"); p.add_argument("--title", default="Edit plan")
     a = ap.parse_args()
     if a.cmd == "init": return cmd_init(a)
     if a.cmd == "transcribe": return cmd_transcribe(a)
     if a.cmd == "plan":
         from cve.planner import run; return run(a.words, a.out, a.title)
+    from cve import styles as S
+    if a.cmd == "styles": return S.print_styles()
+    if a.cmd == "gallery": return S.gallery(a.out)
     if a.cmd == "verify": return cmd_verify(a)
-    P = Project(a.project); ids = ids_of(a)
+    P = Project(a.project); ids = ids_of(a); S.add_search_path(P.p("styles"))
+    sts = [x for x in getattr(a, "styles", "").split(",") if x]; fmts = getattr(a, "formats", "9x16,4x5").split(",")
     from cve import cut, crop, build, music, render, review
     if a.cmd in ("cut", "all"): cut.run(P, ids, getattr(a, "force", False))
     if a.cmd in ("crop", "all"): crop.run(P, ids)
-    if a.cmd in ("build", "all"): build.run(P, ids, a.variants.split(","), a.reuse_video)
+    if a.cmd in ("build", "all"): build.run(P, ids, fmts, a.reuse_video, sts)
     if a.cmd in ("music", "all"): music.run(P, ids)
-    if a.cmd == "render": render.run(P, ids, a.variants.split(","))
-    if a.cmd == "all":
-        v = a.variants.split(","); rv = ["A"] + (["B"] if "B" in v else [])
-        rv += [x + "45" for x in rv] if "45" in v else []
-        render.run(P, ids, rv)
+    if a.cmd in ("render", "all"): render.run(P, ids, sts, fmts)
     if a.cmd in ("timeline", "all"): review.timeline(P, ids)
     if a.cmd == "sheet": review.sheet(P, ids)
 

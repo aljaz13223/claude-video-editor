@@ -1,11 +1,9 @@
-"""Build HyperFrames compositions for every short:
-  A   = classic 9:16 (hook title, 4:5 face-tracked panel, karaoke captions, cards, brand strip, end card)
-  B   = cinematic 9:16 (black bars, one-line title with accent words, 4:3 video, white captions, name under video,
-        optional full-frame graphics over a blurred video when the short has "bfull": true)
-  45  = 4:5 (1080x1350) feed versions of A and B for Instagram / Facebook (they crop 9:16 to 4:5 in the feed)
-Outputs build/<id>, build_b/<id>, build_45a/<id>, build_45b/<id> with index.html + assets/."""
+"""Build HyperFrames compositions for every short in every chosen style (see styles/), in 9:16 and, when the style
+supports it, 4:5 (1080x1350) for Instagram / Facebook feeds (they crop 9:16 to 4:5 and hide titles and logos).
+Layout:  build/<id>/timeline.json   build/<id>/<style>/index.html   build/<id>/<style>@4x5/index.html"""
 import difflib, glob, json, os, re, shutil, subprocess
 from .project import ROOT, TEMPLATES, fill, ffmpeg, hf_project_files
+from .styles import load_style
 
 
 def norm(t): return re.sub(r"[^\w]", "", t.lower())
@@ -75,7 +73,7 @@ def xexpr(s, i, half, maxx):
 def write(P, dst, tpl_name, D, extra=None):
     os.makedirs(dst + "/assets", exist_ok=True); hf_project_files(dst, os.path.basename(dst))
     shutil.copy(P.logo_path(), dst + "/assets/logo.svg")
-    h = fill(open(os.path.join(TEMPLATES, tpl_name), encoding="utf-8").read(), P.vars())
+    h = fill(open(tpl_name, encoding="utf-8").read(), P.vars())
     h = h.replace("__TOTAL__", str(D["total"])).replace("__VEND__", str(D["vend"])).replace("__DATA__", json.dumps(D, ensure_ascii=False))
     h = h.replace("__H1__", D["hook"][0]).replace("__H2__", D["hook"][1] if len(D["hook"]) > 1 else "")
     if extra: h = extra(h)
@@ -86,35 +84,45 @@ def write(P, dst, tpl_name, D, extra=None):
     open(dst + "/index.html", "w", encoding="utf-8").write(h)
 
 
-def to45(h, css_file):
-    css = open(os.path.join(TEMPLATES, css_file), encoding="utf-8").read()
+def to45(h, css_path):
+    css = open(css_path, encoding="utf-8").read()
     h = h.replace('content="width=1080, height=1920"', 'content="width=1080, height=1350"').replace('data-height="1920"', 'data-height="1350"')
     return h.replace("</head>", "<style>\n" + css + "\n</style>\n</head>", 1)
 
 
-def run(P, ids=(), variants=("A", "B", "45"), reuse_video=False):
+def short_styles(P, s):
+    """Styles for a short: shorts.json "styles", else legacy "variants" (A/B), else project default."""
+    if s.get("styles"): return s["styles"]
+    if s.get("variants"):
+        m = {"A": "clean-podcast", "B": "cinema-bars-fullframe" if s.get("bfull") else "cinema-bars"}
+        return [m[v] for v in s["variants"] if v in m]
+    return P.cfg.get("styles", ["clean-podcast"])
+
+
+def run(P, ids=(), formats=("9x16", "4x5"), reuse_video=False, only_styles=()):
     for s in P.select(ids):
-        D = timeline(P, s); sid = s["id"]
-        A = P.p("build", sid); os.makedirs(A + "/assets", exist_ok=True)
-        json.dump(D, open(A + "/timeline.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-        want_b = "B" in variants and s.get("variants", ["A", "B"]).count("B")
-        # A: face-tracked 4:5 panel (seg/<id>_<i>_c.mp4 from `cve crop`, else static crop at cx)
-        if not (reuse_video and os.path.exists(A + "/assets/aroll.mp4")):
-            inp = []
-            for g in D["segs"]:
-                c = P.p("seg", f"{sid}_{g['i']}_c.mp4")
-                inp.append((c, "0") if os.path.exists(c) else (P.p("seg", f"{sid}_{g['i']}.mp4"), xexpr(s, g["i"], 288, 704)))
-            concat(P, inp, "crop=576:720:x='{x0}':y=0,scale=1080:1350:flags=lanczos,eq=contrast=1.04:saturation=1.06", A + "/assets/aroll.mp4")
-        write(P, A, "short_a.html", D)
-        if "45" in variants: write(P, P.p("build_45a", sid), "short_a.html", D, lambda h: to45(h, "fmt45_a.css")); _copy_assets(A, P.p("build_45a", sid))
-        if want_b:
-            B = P.p("build_b", sid); os.makedirs(B + "/assets", exist_ok=True)
-            if not (reuse_video and os.path.exists(B + "/assets/aroll.mp4")):
-                inp = [(P.p("seg", f"{sid}_{g['i']}.mp4"), xexpr(s, g["i"], 480, 320)) for g in D["segs"]]
-                concat(P, inp, "crop=960:720:x='{x0}':y=0,scale=1080:810:flags=lanczos,eq=contrast=1.06:saturation=1.04:brightness=-0.01", B + "/assets/aroll.mp4")
-            write(P, B, "short_b.html", D)
-            if "45" in variants: write(P, P.p("build_45b", sid), "short_b.html", D, lambda h: to45(h, "fmt45_b.css")); _copy_assets(B, P.p("build_45b", sid))
-        print(sid, "built", f"{D['total']}s", "graphics:", [g["title"] for g in D["gfx"]], flush=True)
+        D = timeline(P, s); sid = s["id"]; base = P.p("build", sid); os.makedirs(base, exist_ok=True)
+        json.dump(D, open(base + "/timeline.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        made = []
+        for st_id in short_styles(P, s):
+            if only_styles and st_id not in only_styles: continue
+            st = load_style(st_id); v = st["video"]
+            out = os.path.join(base, st_id); os.makedirs(out + "/assets", exist_ok=True)
+            if not (reuse_video and os.path.exists(out + "/assets/aroll.mp4")):
+                inp = []
+                for g in D["segs"]:
+                    c = P.p("seg", f"{sid}_{g['i']}_c.mp4")
+                    if v.get("face_track") and v["crop_w"] == 576 and os.path.exists(c): inp.append((c, "0"))
+                    else: inp.append((P.p("seg", f"{sid}_{g['i']}.mp4"), xexpr(s, g["i"], v["crop_w"] // 2, 1280 - v["crop_w"])))
+                vf = f"crop={v['crop_w']}:720:x='{{x0}}':y=0,scale={v['out_w']}:{v['out_h']}:flags=lanczos," + v.get("grade", "null")
+                concat(P, inp, vf, out + "/assets/aroll.mp4")
+            Dv = dict(D, **st.get("flags", {}))
+            tpl = os.path.join(st["_dir"], st["template"]) if os.path.exists(os.path.join(st["_dir"], st["template"])) else os.path.join(TEMPLATES, st["template"])
+            if "9x16" in formats: write(P, out, tpl, Dv); made.append(st_id)
+            if "4x5" in formats and st.get("format_4x5"):
+                o45 = out + "@4x5"; css = os.path.join(st["_dir"], st["format_4x5"]) if os.path.exists(os.path.join(st["_dir"], st["format_4x5"])) else os.path.join(TEMPLATES, st["format_4x5"])
+                write(P, o45, tpl, Dv, lambda h, c=css: to45(h, c)); _copy_assets(out, o45); made.append(st_id + "@4x5")
+        print(sid, "built", f"{D['total']}s", "->", ", ".join(made), "| graphics:", [g["title"] for g in D["gfx"]], flush=True)
 
 
 def _copy_assets(src, dst):

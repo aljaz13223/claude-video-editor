@@ -17,7 +17,14 @@
     "highlight": "#3ddc5a",
     "accent_b": "#33d6cc"
   },
-  "music": { "speech_db": -15, "gap_db": -9, "end_db": -6 },
+  "music": {
+    "speech_db": -15,
+    "gap_db": -9,
+    "end_db": -6
+  },
   "end_card_seconds": 1.8,
-  "hyperframes": "hyperframes@0.8.141"
+  "hyperframes": "hyperframes@0.8.141",
+  "styles": [
+    "clean-podcast"
+  ]
 }

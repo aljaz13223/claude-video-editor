@@ -1,7 +1,7 @@
 """Background music under speech.
 Picks the part of the track that builds towards the end, loops with a crossfade if it is too short, and ducks it
 relative to the measured speech level: speech_db under speech, gap_db in pauses, end_db on the end card.
-Without "music" in shorts.json a soft synthesized pad is used instead. Writes assets/bed.wav in every variant folder."""
+Without "music" in shorts.json a soft synthesized pad is used instead. Writes build/<id>/bed.wav and copies it into every style folder."""
 import os, shutil, subprocess, wave
 import numpy as np
 from .project import ffmpeg
@@ -40,9 +40,12 @@ def pad(total, seed):
 
 def bed_for(P, sid, music_file, seed=0):
     import json
+    import glob as _g
     D = json.load(open(P.p("build", sid, "timeline.json"), encoding="utf-8"))
+    rolls = sorted(_g.glob(P.p("build", sid, "*", "assets", "aroll.mp4")))
+    if not rolls: raise SystemExit(f"{sid}: run `cve build` first")
     total, vend = D["total"], D["vend"]; N = int(total * SR); hop = int(0.05 * SR)
-    sp = dec(P.p("build", sid, "assets", "aroll.mp4"), 1); sp = np.pad(sp, (0, max(0, N - len(sp))))[:N]
+    sp = dec(rolls[0], 1); sp = np.pad(sp, (0, max(0, N - len(sp))))[:N]
     fr = len(sp) // hop; rms = np.sqrt(np.mean(sp[:fr * hop].reshape(fr, hop) ** 2, 1) + 1e-12)
     act = rms > max(0.008, 0.18 * np.percentile(rms, 90))
     act = np.convolve(act.astype(float), np.ones(7) / 7, "same") > 0.15
@@ -68,11 +71,11 @@ def bed_for(P, sid, music_file, seed=0):
     t = np.arange(N) / SR; g *= np.clip(t / 0.8, 0, 1) * np.clip((total - t) / 1.2, 0, 1)
     out = m * g[:, None]; pk = np.max(np.abs(out))
     if pk > 0.9: out *= 0.9 / pk
-    dst = P.p("build", sid, "assets", "bed.wav")
+    dst = P.p("build", sid, "bed.wav")
     with wave.open(dst, "wb") as w:
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes((out * 32767).astype(np.int16).tobytes())
-    for root in ("build_b", "build_45a", "build_45b"):
-        if os.path.isdir(P.p(root, sid, "assets")): shutil.copy(dst, P.p(root, sid, "assets", "bed.wav"))
+    for a in _g.glob(P.p("build", sid, "*", "assets")):
+        shutil.copy(dst, os.path.join(a, "bed.wav"))
     return sp_rms
 
 

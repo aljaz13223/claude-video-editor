@@ -1,0 +1,13 @@
+{
+  "id": "cinema-bars-fullframe",
+  "order": 3,
+  "name": "Cinema Bars + Full-frame Graphics",
+  "tagline": "Cinema Bars with big graphics over the blurred shot",
+  "description": "Cinema Bars, plus big kinetic graphics inside the video frame: the shot blurs and darkens in place (no zoom), the guest's name and a large title animate in with an accent bar, rings and soft depth dots; captions move under the video while the graphic is up.",
+  "best_for": ["compilations (one graphic per answer)", "key numbers and named ideas", "high-retention edits"],
+  "preview": "preview.jpg",
+  "template": "../cinema-bars/template.html",
+  "format_4x5": "../cinema-bars/format_4x5.css",
+  "video": { "crop_w": 960, "out_w": 1080, "out_h": 810, "face_track": false, "grade": "eq=contrast=1.06:saturation=1.04:brightness=-0.01" },
+  "flags": { "bfull": true }
+}
