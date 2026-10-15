@@ -114,6 +114,7 @@ Copy a skill folder into `~/.claude/skills/` (or your project's `.claude/skills/
 
 * [nateherkai/herk-edit-kit](https://github.com/nateherkai/herk-edit-kit) is a HyperFrames editing kit. It covers silence and mistake cuts, short-form planning, motion-graphics card libraries and beat-synced showreels.
 * [nateherkai/human-speak](https://github.com/nateherkai/human-speak) removes AI-sounding phrasing from titles, descriptions and captions.
+* [ArtCraft](https://getartcraft.com/apps) is a suite of 13 apps (FilmCraft, EffectCraft, PhotoCraft, SoundCraft and others). Every app has a CLI and an MCP server. See [docs/artcraft.md](docs/artcraft.md).
 * [aljaz13223/marox-ai](https://github.com/aljaz13223/Marox-ai) collects all of the above plus more skills in one place.
 
 ## Notes on content and licences
