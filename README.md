@@ -110,6 +110,12 @@ feedback loop) and `skills/` contains ready-to-install Claude skills:
 
 Copy a skill folder into `~/.claude/skills/` (or your project's `.claude/skills/`).
 
+### Works well alongside
+
+* [nateherkai/herk-edit-kit](https://github.com/nateherkai/herk-edit-kit) is a HyperFrames editing kit. It covers silence and mistake cuts, short-form planning, motion-graphics card libraries and beat-synced showreels.
+* [nateherkai/human-speak](https://github.com/nateherkai/human-speak) removes AI-sounding phrasing from titles, descriptions and captions.
+* [aljaz13223/marox-ai](https://github.com/aljaz13223/Marox-ai) collects all of the above plus more skills in one place.
+
 ## Notes on content and licences
 
 The code and templates are MIT licensed. Your footage, music and logos are yours — the music folder is for tracks you
