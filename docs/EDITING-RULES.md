@@ -43,3 +43,29 @@ the person directing the edit. Keep project-specific rules in your project's own
 ## Intros (cold opens)
 - Shorter is better (~45 s): host question → guest answer, or one important thought → end.
 - Transition to black gradually with a light glitch, never an instant cut; keep the host CTA as a separate video.
+
+<!-- Lessons from tutorials (2026-10-20) -->
+
+## Sound design
+- Priority order is dialogue, then music, then effects. Effects are accents. Start them too quiet rather than too loud, and they must never mask speech.
+- Place SFX on the exact frame of the cut or the graphic it belongs to. Being one frame late is audible.
+- Use the same sound for the same role every time:
+  - scene transition: riser into whoosh (a reversed bass drop works as a riser)
+  - text appearing: soft click
+  - logo landing: soft hit or ping
+  - repeated items: vary the pitch by about ±1 semitone so a list doesn't sound like a loop
+- Sort the SFX library by role: clicks, whooshes, risers, impacts, ambience, foley.
+- Think in spectrum. Lows add weight, highs (clicks) add tactility. Build contrast between sections, for example highs first and bass hits later.
+
+## Shot variety
+- Treat shots as a collage. Alternate wide compositions (three layers of depth) with close-ups, and keep close-ups for the key lines instead of using them as the default.
+- Vary the pacing of movement such as push-ins and zooms across the video.
+- Before building graphics, write a short plan (hook, peak, ending) and note why each shot sits where it does.
+- When the speaker lists things, give each item its own visual.
+- Longer videos get full-screen chapter cards with big type in the brand colours.
+- For ads and shorts, pick the music first and cut to its rhythm.
+
+## Motion graphics
+- Give every scene its own kind of motion: typing, card, roller, strips, reveal. Don't reuse the same transition throughout.
+- Logo reveals avoid spins and odd flight paths. A clean option: a spark draws a circle, the logo opens from the centre, then a light sweep passes over it.
+- Frame-accurate rendering from HTML/GSAP: pause the timeline and call `TL.seek(i / fps)` for each frame, take a screenshot, and pipe the frames to ffmpeg. See `tools/render_html.py`.
