@@ -51,6 +51,15 @@ builds a new style folder (layout, type, colours, motion), renders a preview nex
 Your styles live in `<project>/styles/` and show up in the gallery next to the built-in ones. Pull requests with new
 styles are welcome.
 
+
+## Takeframe — desktop AI editor (new)
+
+[`takeframe/`](takeframe/) is a desktop video editor (Electron) where Claude builds the whole edit with these rules and skills,
+and you fine-tune it on a real multi-track timeline. Select any clip and ask Claude to change only that part.
+Local speech enhancement (DeepFilterNet3), voice/music separation (Demucs), Whisper transcripts, a music generator that
+never repeats a style, and one-click export to MP4 in every social format, MP3, music-only, speech-only, SRT/VTT/TXT.
+See [`takeframe/README.md`](takeframe/README.md).
+
 ## Install
 
 Requirements: Python 3.10+ (MediaPipe for the speaker cut-out in `editorial-depth`), Node 18+ (for `npx hyperframes`), ffmpeg on `PATH`, optionally an NVIDIA GPU for fast transcription.
