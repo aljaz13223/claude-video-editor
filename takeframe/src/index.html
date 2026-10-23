@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Takeframe</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body class="ws-edit">
+
+<!-- ======================= START ======================= -->
+<div id="start" class="screen">
+  <div class="st-top">
+    <div class="brand"><span class="mark"><i></i><i></i></span>Takeframe</div>
+    <div class="env" id="env"></div>
+  </div>
+  <div class="st-body">
+    <section class="st-new">
+      <h1>New project</h1>
+      <div class="row2">
+        <label class="fld"><span>Name</span><input id="npName" placeholder="Spring ad for men" autocomplete="off"></label>
+        <label class="fld"><span>Client</span><select id="npClient"><option value="">— none —</option></select></label>
+      </div>
+      <div class="row3">
+        <div class="fld"><span>Format</span>
+          <div class="seg" id="npFormat">
+            <button data-v="9:16" class="on"><b class="ar a916"></b>9:16</button><button data-v="16:9"><b class="ar a169"></b>16:9</button>
+            <button data-v="1:1"><b class="ar a11"></b>1:1</button><button data-v="4:5"><b class="ar a45"></b>4:5</button>
+          </div></div>
+        <label class="fld sm"><span>Length (s)</span><input id="npDur" type="number" value="20" min="3" max="3600"></label>
+        <label class="fld sm"><span>FPS</span><select id="npFps"><option>24</option><option>25</option><option selected>30</option><option>60</option></select></label>
+      </div>
+
+      <div class="fld"><span>Footage &amp; assets</span>
+        <div class="drop" id="drop">
+          <div class="drop-hint"><b>Drop videos, photos, music, logos here</b>
+            <div class="drop-btns"><button class="btn" id="btnFiles">Choose files…</button><button class="btn" id="btnFolder">Connect folder…</button></div>
+            <small id="folderInfo">A connected folder is read live: Claude sees every file in it.</small></div>
+          <div class="src-list" id="srcList"></div>
+        </div>
+      </div>
+
+      <label class="fld"><span>What should Claude make? <em>optional — leave empty to start with an empty timeline</em></span>
+        <textarea id="npPrompt" rows="3" placeholder="Take all product photos and the logo. 30 s energetic ad, offer on its own screen, logo at the end."></textarea></label>
+      <div class="st-actions">
+        <button class="btn" id="btnEmpty">Create empty</button>
+        <button class="btn primary" id="btnCreate"><span class="spark"></span>Create with Claude</button>
+      </div>
+    </section>
+    <aside class="st-side">
+      <h2>Recent</h2>
+      <div id="recent" class="recent"><div class="muted">No projects yet.</div></div>
+      <button class="btn ghost" id="btnOpen">Open project file…</button>
+      <h2>Test project</h2>
+      <p class="muted">A demo made entirely by Claude — music, graphics and voice generated from scratch.</p>
+      <button class="btn ghost" id="btnDemo">Open demo</button>
+    </aside>
+  </div>
+</div>
+
+<!-- ======================= EDITOR ======================= -->
+<div id="editor" class="screen hidden">
+  <header class="top">
+    <button class="brand small" id="btnHome" title="Projects"><span class="mark"><i></i><i></i></span></button>
+    <input class="pname" id="pName" spellcheck="false">
+    <span class="pmeta" id="pMeta"></span>
+    <nav class="ws" id="ws">
+      <button data-ws="edit" class="on">Edit</button><button data-ws="motion">Motion</button><button data-ws="sound">Sound</button><button data-ws="color">Color</button>
+    </nav>
+    <div class="top-r">
+      <span class="saved" id="saved">Saved</span>
+      <button class="btn" id="btnUndo" title="Undo (Ctrl+Z)">↶</button><button class="btn" id="btnRedo" title="Redo (Ctrl+Shift+Z)">↷</button>
+      <button class="btn primary" id="btnExport">Export</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <aside class="panel left">
+      <div class="tabs" id="leftTabs"><button data-t="media" class="on">Media</button><button data-t="fx">Effects</button><button data-t="text">Text</button><button data-t="audio">Audio</button></div>
+      <div class="pbody" data-p="media">
+        <div class="bin-tools"><button class="btn sm" id="binAdd">Import…</button><button class="btn sm" id="binFolder">Folder…</button><input id="binSearch" placeholder="Search"></div>
+        <div class="bin" id="bin"></div>
+      </div>
+      <div class="pbody hidden" data-p="fx">
+        <div class="sec-h">Transitions <em>drag onto a cut</em></div><div class="chips" id="fxTrans"></div>
+        <div class="sec-h">Looks <em>click to apply to selected</em></div><div class="chips" id="fxLooks"></div>
+        <div class="sec-h">Picture motion</div><div class="chips" id="fxMotion"></div>
+      </div>
+      <div class="pbody hidden" data-p="text">
+        <div class="sec-h">Title presets <em>adds at playhead on V3</em></div><div class="presets" id="txtPresets"></div>
+        <div class="sec-h">Shapes &amp; backgrounds</div><div class="presets" id="shapePresets"></div>
+      </div>
+      <div class="pbody hidden" data-p="audio">
+        <div class="sec-h">New music <em>never the same twice</em></div>
+        <div class="musicgen">
+          <select id="musStyle"><option value="auto">Auto — unused style</option></select>
+          <div class="row2"><label class="fld sm"><span>Length</span><input id="musDur" type="number" value="20"></label><label class="fld sm"><span>BPM</span><input id="musBpm" type="number" value="0" title="0 = style default"></label></div>
+          <button class="btn wide" id="musGo">Generate music</button>
+        </div>
+        <div class="sec-h">Sound effects</div><div class="sfx" id="sfxList"></div>
+      </div>
+    </aside>
+
+    <section class="monitor">
+      <div class="mon-h"><span class="lbl">Program</span><span id="monInfo" class="muted"></span>
+        <div class="mon-tools"><button class="btn sm tog" id="tSafe" title="Reels/TikTok safe zone">Safe</button><select id="monZoom"><option value="fit">Fit</option><option value="0.25">25%</option><option value="0.5">50%</option><option value="1">100%</option></select></div></div>
+      <div class="viewport" id="viewport"><div class="stage-wrap" id="stageWrap"><div id="stage"></div><div class="safe" id="safe"></div></div></div>
+      <div class="transport">
+        <span class="tc" id="tc">00:00:00:00</span>
+        <div class="tbtns">
+          <button id="bStart" title="Home">⏮</button><button id="bPrev" title="Previous frame (←)">◂</button>
+          <button id="bPlay" class="play" title="Play (Space)">▶</button>
+          <button id="bNext" title="Next frame (→)">▸</button><button id="bEnd" title="End">⏭</button>
+          <button id="bIn" title="Mark In (I)">{</button><button id="bOut" title="Mark Out (O)">}</button><button id="bLoop" class="tog" title="Loop">⟲</button>
+        </div>
+        <span class="tc dim" id="tcDur">00:00:20:00</span>
+      </div>
+    </section>
+
+    <aside class="panel right">
+      <div class="tabs" id="rightTabs"><button data-t="insp" class="on">Inspector</button><button data-t="claude">Claude</button><button data-t="hist">History</button></div>
+      <div class="pbody" data-p="insp"><div id="insp" class="insp"></div></div>
+      <div class="pbody hidden chat" data-p="claude">
+        <div class="chat-log" id="chatLog"></div>
+        <div class="chat-in">
+          <div class="scope" id="scope"></div>
+          <textarea id="chatText" rows="3" placeholder="Tell Claude what to make or change…"></textarea>
+          <div class="chat-btns"><span class="muted" id="aiCost"></span><button class="btn" id="chatStop" disabled>Stop</button><button class="btn primary" id="chatSend">Send</button></div>
+        </div>
+      </div>
+      <div class="pbody hidden" data-p="hist"><div id="hist" class="hist"></div></div>
+    </aside>
+  </main>
+
+  <section class="timeline" id="timeline" tabindex="0">
+    <div class="tl-bar">
+      <div class="tools" id="tools">
+        <button data-tool="select" class="on" title="Selection (V)">V</button><button data-tool="razor" title="Razor (C)">C</button><button data-tool="ripple" title="Ripple edit (B)">B</button><button data-tool="text" title="Type (T)">T</button>
+      </div>
+      <button class="btn sm tog on" id="tSnap" title="Snap (S)">Snap</button>
+      <button class="btn sm tog" id="tBeats" title="Show music bars">Bars</button>
+      <span class="sep"></span>
+      <button class="btn sm" id="tSplit" title="Split at playhead (Ctrl+K)">Split</button>
+      <button class="btn sm" id="tDel" title="Ripple delete (Shift+Del)">Ripple delete</button>
+      <button class="btn sm" id="tMarker" title="Add marker (M)">Marker</button>
+      <span class="grow"></span>
+      <span class="muted" id="tlInfo"></span>
+      <input type="range" id="tZoom" min="10" max="400" value="60" title="Zoom (+/−)">
+    </div>
+    <div class="tl-body">
+      <div class="heads" id="heads"></div>
+      <div class="lanes-wrap" id="lanesWrap">
+        <div class="ruler" id="ruler"></div>
+        <div class="lanes" id="lanes"></div>
+        <div class="playhead" id="playhead"><i></i></div>
+        <div class="ask" id="ask"><input id="askText" placeholder="Ask Claude to change only this…"><button id="askGo">↵</button></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ======================= EXPORT ======================= -->
+<dialog id="exportDlg">
+  <form method="dialog" class="exp">
+    <h2>Export</h2>
+    <div class="exp-grid">
+      <div><div class="sec-h">Video · MP4 H.264</div><div id="expVideo" class="checks"></div>
+        <label class="fld sm"><span>Frame rate</span><select id="expFps"><option value="0">Project</option><option>24</option><option>25</option><option>30</option><option>60</option></select></label></div>
+      <div><div class="sec-h">Audio</div><div class="checks">
+        <label><input type="checkbox" id="expMp3" checked> Full mix · MP3 320</label>
+        <label><input type="checkbox" id="expWav"> Full mix · WAV</label>
+        <label><input type="checkbox" id="expMusic"> Music only</label>
+        <label><input type="checkbox" id="expSpeech"> Speech only</label>
+        <label><input type="checkbox" id="expSfx"> SFX only</label>
+        <label class="fld sm"><span>Stem format</span><select id="expAfmt"><option value="mp3">MP3</option><option value="wav">WAV</option></select></label></div></div>
+      <div><div class="sec-h">Text &amp; image</div><div class="checks">
+        <label><input type="checkbox" id="expTxt"> Transcript · TXT</label>
+        <label><input type="checkbox" id="expSrt"> Captions · SRT</label>
+        <label><input type="checkbox" id="expVtt"> Captions · VTT</label>
+        <label><input type="checkbox" id="expThumb" checked> Thumbnail · PNG</label></div>
+        <div class="sec-h">Range</div><div class="checks"><label><input type="radio" name="rng" value="all" checked> Whole timeline</label><label><input type="radio" name="rng" value="io"> In → Out</label></div></div>
+    </div>
+    <div class="exp-dest"><span class="muted">Saves to</span> <code id="expDir"></code> <button class="btn sm" id="expPick" type="button">Change…</button></div>
+    <div class="exp-prog hidden" id="expProg"><div class="bar"><i id="expBar"></i></div><span id="expStep"></span></div>
+    <div class="exp-act"><button class="btn" value="cancel" id="expCancel">Close</button><button class="btn primary" id="expGo" type="button">Export</button></div>
+  </form>
+</dialog>
+
+<div id="toast"></div>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body></html>
