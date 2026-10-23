@@ -15,35 +15,39 @@
   <div class="st-body">
     <section class="st-new">
       <h1>New project</h1>
-      <div class="row2">
-        <label class="fld"><span>Name</span><input id="npName" placeholder="Spring ad for men" autocomplete="off"></label>
-        <label class="fld"><span>Client</span><select id="npClient"><option value="">— none —</option></select></label>
-      </div>
-      <div class="row3">
-        <div class="fld"><span>Format</span>
-          <div class="seg" id="npFormat">
-            <button data-v="9:16" class="on"><b class="ar a916"></b>9:16</button><button data-v="16:9"><b class="ar a169"></b>16:9</button>
-            <button data-v="1:1"><b class="ar a11"></b>1:1</button><button data-v="4:5"><b class="ar a45"></b>4:5</button>
-          </div></div>
-        <label class="fld sm"><span>Length (s)</span><input id="npDur" type="number" value="20" min="3" max="3600"></label>
-        <label class="fld sm"><span>FPS</span><select id="npFps"><option>24</option><option>25</option><option selected>30</option><option>60</option></select></label>
-      </div>
-
-      <div class="fld"><span>Footage &amp; assets</span>
-        <div class="drop" id="drop">
-          <div class="drop-hint"><b>Drop videos, photos, music, logos here</b>
-            <div class="drop-btns"><button class="btn" id="btnFiles">Choose files…</button><button class="btn" id="btnFolder">Connect folder…</button></div>
-            <small id="folderInfo">A connected folder is read live: Claude sees every file in it.</small></div>
-          <div class="src-list" id="srcList"></div>
+      <div class="step">
+        <div class="step-n">1</div>
+        <div class="step-b">
+          <div class="step-h">Folder <em>your footage, photos, music — shown inside the editor so you can drag from it</em></div>
+          <div class="drop" id="drop">
+            <button class="btn big" id="btnFolder"><span class="ico-folder"></span>Choose folder…</button>
+            <div class="drop-txt"><b id="folderPath">No folder selected</b><small id="folderInfo">or drop a folder / files here · <a href="#" id="btnFiles">pick single files</a></small></div>
+          </div>
         </div>
       </div>
-
-      <label class="fld"><span>What should Claude make? <em>optional — leave empty to start with an empty timeline</em></span>
-        <textarea id="npPrompt" rows="3" placeholder="Take all product photos and the logo. 30 s energetic ad, offer on its own screen, logo at the end."></textarea></label>
-      <div class="st-actions">
-        <button class="btn" id="btnEmpty">Create empty</button>
-        <button class="btn primary" id="btnCreate"><span class="spark"></span>Create with Claude</button>
+      <div class="step">
+        <div class="step-n">2</div>
+        <div class="step-b">
+          <div class="step-h">Resolution</div>
+          <div class="res-grid" id="resGrid"></div>
+          <div class="res-custom" id="resCustom"><input id="resW" type="number" value="1080" min="16" step="2"><span>×</span><input id="resH" type="number" value="1920" min="16" step="2"><span class="muted">px</span></div>
+          <div class="row-inline">
+            <label class="fld sm"><span>Frame rate</span><select id="npFps"><option>24</option><option>25</option><option selected>30</option><option>50</option><option>60</option></select></label>
+            <label class="fld sm"><span>Name <em>optional</em></span><input id="npName" placeholder="= folder name" autocomplete="off"></label>
+            <label class="fld sm"><span>Client <em>optional</em></span><select id="npClient"><option value="">— none —</option></select></label>
+          </div>
+        </div>
       </div>
+      <div class="st-actions">
+        <button class="btn primary big" id="btnEmpty">Start editing <kbd>Enter</kbd></button>
+      </div>
+      <details class="st-more">
+        <summary><span class="spark"></span>Or let Claude build the first cut</summary>
+        <textarea id="npPrompt" rows="3" placeholder="Take all product photos and the logo. 30 s energetic ad, offer on its own screen, logo at the end."></textarea>
+        <div class="row-inline"><label class="fld sm"><span>Length (s)</span><input id="npDur" type="number" value="30" min="3" max="3600"></label>
+          <button class="btn primary" id="btnCreate"><span class="spark"></span>Create with Claude</button></div>
+      </details>
+      <div class="src-list hidden" id="srcList"></div>
     </section>
     <aside class="st-side">
       <h2>Recent</h2>
@@ -65,6 +69,7 @@
     <nav class="ws" id="ws">
       <button data-ws="edit" class="on">Edit</button><button data-ws="motion">Motion</button><button data-ws="sound">Sound</button><button data-ws="color">Color</button>
     </nav>
+    <button class="cmdbar" id="cmdBar" data-run="app.palette"><i class="ti ti-cmd"></i><span>Search commands…</span><kbd data-act="app.palette"></kbd></button>
     <div class="top-r">
       <span class="saved" id="saved">Saved</span>
       <button class="btn" id="btnUndo" title="Undo (Ctrl+Z)">↶</button><button class="btn" id="btnRedo" title="Redo (Ctrl+Shift+Z)">↷</button>
@@ -74,15 +79,22 @@
 
   <main class="grid">
     <aside class="panel left">
-      <div class="tabs" id="leftTabs"><button data-t="media" class="on">Media</button><button data-t="fx">Effects</button><button data-t="text">Text</button><button data-t="audio">Audio</button></div>
-      <div class="pbody" data-p="media">
+      <div class="tabs" id="leftTabs"><button data-t="folder" class="on" title="Shift+1">Folder</button><button data-t="media" title="Shift+2">Bin</button><button data-t="fx" title="Shift+3">Effects</button><button data-t="text" title="Shift+4">Text</button><button data-t="audio" title="Shift+5">Audio</button></div>
+      <div class="pbody fold" data-p="folder">
+        <div class="fold-top"><button class="btn sm" id="foldUp" title="Up one folder">↑</button><div class="crumb" id="foldCrumb"></div><button class="btn sm" id="foldPick" title="Add / change folder">＋</button><button class="btn sm" id="foldRefresh" title="Refresh">⟳</button></div>
+        <div class="fold-filter"><input id="foldSearch" placeholder="Filter files"><div class="seg sm" id="foldType"><button data-v="" class="on" title="All files">All</button><button data-v="video" title="Video">▶</button><button data-v="image" title="Images">▣</button><button data-v="audio" title="Audio">♪</button></div></div>
+        <div class="fold-view"><button data-v="list" class="on" title="List">☰</button><button data-v="grid" title="Thumbnails">▦</button></div>
+        <div class="fold-list" id="foldList"></div>
+        <div class="fold-prev" id="foldPrev"><div class="muted">Click a file to preview. Drag it to the timeline or double-click to place it at the playhead.</div></div>
+      </div>
+      <div class="pbody hidden" data-p="media">
         <div class="bin-tools"><button class="btn sm" id="binAdd">Import…</button><button class="btn sm" id="binFolder">Folder…</button><input id="binSearch" placeholder="Search"></div>
         <div class="bin" id="bin"></div>
       </div>
       <div class="pbody hidden" data-p="fx">
-        <div class="sec-h">Transitions <em>drag onto a cut</em></div><div class="chips" id="fxTrans"></div>
-        <div class="sec-h">Looks <em>click to apply to selected</em></div><div class="chips" id="fxLooks"></div>
-        <div class="sec-h">Picture motion</div><div class="chips" id="fxMotion"></div>
+        <input id="fxSearch" placeholder="Search effects" class="fx-search">
+        <div class="fx-help">Drag an effect onto a clip on the timeline, or select clips and click it. Applied effects show as badges on the clip and in the Inspector.</div>
+        <div id="fxPanel"></div>
       </div>
       <div class="pbody hidden" data-p="text">
         <div class="sec-h">Title presets <em>adds at playhead on V3</em></div><div class="presets" id="txtPresets"></div>
@@ -132,18 +144,27 @@
 
   <section class="timeline" id="timeline" tabindex="0">
     <div class="tl-bar">
-      <div class="tools" id="tools">
-        <button data-tool="select" class="on" title="Selection (V)">V</button><button data-tool="razor" title="Razor (C)">C</button><button data-tool="ripple" title="Ripple edit (B)">B</button><button data-tool="text" title="Type (T)">T</button>
+      <div class="tgroup" id="tools">
+        <button data-tool="select" class="on" title="Selection tool"><i class="ti ti-sel"></i>Select<kbd data-act="tool.select"></kbd></button>
+        <button data-tool="razor" title="Razor: click a clip to cut it"><i class="ti ti-razor"></i>Razor<kbd data-act="tool.razor"></kbd></button>
+        <button data-tool="ripple" title="Ripple trim: trimming moves everything after"><i class="ti ti-ripple"></i>Ripple<kbd data-act="tool.ripple"></kbd></button>
+        <button data-tool="text" title="Type: click a video track to add text"><i class="ti ti-text"></i>Text<kbd data-act="tool.text"></kbd></button>
       </div>
-      <button class="btn sm tog on" id="tSnap" title="Snap (S)">Snap</button>
-      <button class="btn sm tog" id="tBeats" title="Show music bars">Bars</button>
-      <span class="sep"></span>
-      <button class="btn sm" id="tSplit" title="Split at playhead (Ctrl+K)">Split</button>
-      <button class="btn sm" id="tDel" title="Ripple delete (Shift+Del)">Ripple delete</button>
-      <button class="btn sm" id="tMarker" title="Add marker (M)">Marker</button>
+      <div class="tgroup">
+        <button data-run="edit.split" title="Split selected clips (or all tracks) at the playhead"><i class="ti ti-split"></i>Split<kbd data-act="edit.split"></kbd></button>
+        <button data-run="edit.rippleDelete" title="Delete and close the gap"><i class="ti ti-rdel"></i>Ripple delete<kbd data-act="edit.rippleDelete"></kbd></button>
+        <button data-run="edit.transition" title="Add the default crossfade to selected clips"><i class="ti ti-trans"></i>Transition<kbd data-act="edit.transition"></kbd></button>
+        <button data-run="edit.marker" title="Marker at the playhead"><i class="ti ti-mark"></i>Marker<kbd data-act="edit.marker"></kbd></button>
+      </div>
+      <div class="tgroup">
+        <button class="tog on" id="tSnap" data-run="view.snap" title="Snap to playhead, edges, markers and music bars"><i class="ti ti-snap"></i>Snap<kbd data-act="view.snap"></kbd></button>
+        <button class="tog" id="tBeats" data-run="view.bars" title="Show music bars on the timeline"><i class="ti ti-bars"></i>Bars<kbd data-act="view.bars"></kbd></button>
+      </div>
       <span class="grow"></span>
       <span class="muted" id="tlInfo"></span>
-      <input type="range" id="tZoom" min="10" max="400" value="60" title="Zoom (+/−)">
+      <button class="ibtn" data-run="view.zoomOut" title="Zoom out">−</button><input type="range" id="tZoom" min="10" max="400" value="60" title="Timeline zoom"><button class="ibtn" data-run="view.zoomIn" title="Zoom in">+</button>
+      <button class="ibtn" data-run="app.palette" title="All commands"><i class="ti ti-cmd"></i></button>
+      <button class="ibtn" data-run="app.shortcuts" title="Keyboard shortcuts">⌨</button>
     </div>
     <div class="tl-body">
       <div class="heads" id="heads"></div>
@@ -184,7 +205,12 @@
   </form>
 </dialog>
 
+<div class="ctx hidden" id="ctx"></div>
+<dialog id="palDlg" class="pal"><input id="palIn" placeholder="Type a command…" autocomplete="off"><div id="palList"></div></dialog>
+<dialog id="keysDlg" class="keys"><div class="keys-h"><h2>Keyboard shortcuts</h2><input id="keysSearch" placeholder="Search"><button class="btn sm" id="keysReset">Reset all</button><button class="btn sm" id="keysClose">Close</button></div>
+  <p class="muted">Click a shortcut to change it, then press the new keys. Esc cancels, Backspace removes it.</p><div id="keysList"></div></dialog>
 <div id="toast"></div>
 <script src="engine.js"></script>
 <script src="app.js"></script>
+<script src="ui2.js"></script>
 </body></html>

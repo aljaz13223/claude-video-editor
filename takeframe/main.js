@@ -154,6 +154,23 @@ ipcMain.handle('project-open', async (_, file) => {
   }
   return p;
 });
+// folder browser: one level at a time, dirs first
+ipcMain.handle('list-dir', async (_, dir) => {
+  const out = [];
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (e.name.startsWith('.') || e.name === 'node_modules' || e.name.startsWith('~$')) continue;
+    const f = path.join(dir, e.name);
+    if (e.isDirectory()) { out.push({ name: e.name, path: f, isDir: true }); continue; }
+    const type = VIDEO.test(f) ? 'video' : IMAGE.test(f) ? 'image' : AUDIO.test(f) ? 'audio' : null; if (!type) continue;
+    let st = null; try { st = fs.statSync(f); } catch {}
+    out.push({ name: e.name, path: f, type, size: st ? st.size : 0, mtime: st ? st.mtimeMs : 0, url: pathToFileURL(f).href });
+  }
+  return out.sort((a, b) => (b.isDir ? 1 : 0) - (a.isDir ? 1 : 0) || a.name.localeCompare(b.name, undefined, { numeric: true }));
+});
+ipcMain.handle('file-info', async (_, f) => { const m = await probe(f); if (!m) return null; m.thumb = await thumb(m, path.join(HOME_DIR, 'cache')); m.url = pathToFileURL(f).href; m.thumbUrl = pathToFileURL(m.thumb).href; return m; });
+const KEYMAP = path.join(HOME_DIR, 'keymap.json');
+ipcMain.handle('keymap-get', () => { try { return JSON.parse(fs.readFileSync(KEYMAP, 'utf8')); } catch { return {}; } });
+ipcMain.handle('keymap-set', (_, km) => { fs.writeFileSync(KEYMAP, JSON.stringify(km, null, 1)); return true; });
 ipcMain.handle('reveal', (_, f) => shell.showItemInFolder(f));
 ipcMain.handle('open-path', (_, f) => shell.openPath(f));
 ipcMain.handle('file-url', (_, f) => pathToFileURL(f).href);
@@ -216,7 +233,7 @@ ipcMain.handle('frames', async (_, { project, times, width }) => (await frames(p
 // ---------------- audio mix ----------------
 function audioSrc(p, c) { const m = TF.mediaOf(p, c); if (!m) return null; return c.enhanced || m.enhanced && c.useEnhanced !== false && m.enhanced || m.path; }
 async function mixAudio(p, role, out, range) {
-  const t0 = range ? range[0] : 0, t1 = range ? range[1] : p.duration;
+  const t0 = range ? range[0] : 0, t1 = range ? range[1] : TF.projectDuration(p);
   const clips = TF.audioClips(p, role).filter(c => TF.clipEnd(c) > t0 && c.start < t1);
   const args = ['-y', '-v', 'error']; const parts = []; let i = 0;
   for (const c of clips) {
@@ -269,10 +286,10 @@ ipcMain.handle('export', async (_, { project: p, opts }) => {
       written.push(f);
     }
   }
-  if (opts.thumbnail) { const [img] = await frames(p, [opts.thumbTime || Math.min(1.5, p.duration / 3)], p.w); const f = base + '_thumbnail.png'; fs.writeFileSync(f, img.toPNG()); written.push(f); }
+  if (opts.thumbnail) { const [img] = await frames(p, [opts.thumbTime || Math.min(1.5, TF.projectDuration(p) / 3)], p.w); const f = base + '_thumbnail.png'; fs.writeFileSync(f, img.toPNG()); written.push(f); }
   // video: render frames once at native project size, then encode each resolution
   if ((opts.video || []).length) {
-    const fps = opts.fps || p.fps; const t0 = range ? range[0] : 0, t1 = range ? range[1] : p.duration; const n = Math.round((t1 - t0) * fps);
+    const fps = opts.fps || p.fps; const t0 = range ? range[0] : 0, t1 = range ? range[1] : TF.projectDuration(p); const n = Math.round((t1 - t0) * fps);
     const master = path.join(tmp, 'master.mp4');
     const rw = await getRenderWin(p.w, p.h); await renderCall(rw, { cmd: 'load', project: p, scale: 1 });
     const ff = spawn('ffmpeg', ['-y', '-v', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-', '-i', full, '-map', '0:v', '-map', '1:a',
@@ -474,7 +491,7 @@ async function runTool(name, input, scope, emit, getP, setP) {
 
 function compactProject(p) {
   return {
-    name: p.name, client: p.client, format: p.format, w: p.w, h: p.h, fps: p.fps, duration: p.duration,
+    name: p.name, client: p.client, format: p.format, w: p.w, h: p.h, fps: p.fps, duration: TF.projectDuration(p), autoDuration: !!p.autoDuration,
     clips: p.clips.slice().sort((a, b) => a.track.localeCompare(b.track) || a.start - b.start).map(c => {
       const o = { id: c.id, track: c.track, type: c.type, start: +c.start.toFixed(3), dur: +c.dur.toFixed(3) };
       if (c.media) o.media = c.media; if (c.in) o.in = +c.in.toFixed(3); if (c.text) o.text = c.text;

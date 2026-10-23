@@ -24,10 +24,12 @@
   const FORMATS = {
     '9:16': { w: 1080, h: 1920 }, '16:9': { w: 1920, h: 1080 }, '1:1': { w: 1080, h: 1080 }, '4:5': { w: 1080, h: 1350 },
   };
-  function newProject({ name = 'Untitled', client = '', format = '9:16', fps = 30, duration = 20, folder = '' } = {}) {
-    const f = FORMATS[format] || FORMATS['9:16'];
+  const aspectName = (w, h) => { const r = w / h; for (const [k, v] of Object.entries(FORMATS)) if (Math.abs(v.w / v.h - r) < .01) return k; return `${w}×${h}`; };
+  function newProject({ name = 'Untitled', client = '', format = '9:16', fps = 30, duration = 20, folder = '', w = 0, h = 0, autoDuration = false } = {}) {
+    const f = w && h ? { w: Math.round(w / 2) * 2, h: Math.round(h / 2) * 2 } : (FORMATS[format] || FORMATS['9:16']);
+    if (w && h) format = aspectName(f.w, f.h);
     return {
-      app: 'Takeframe', version: 1, name, client, folder, format, w: f.w, h: f.h, fps, duration,
+      app: 'Takeframe', version: 1, name, client, folder, format, w: f.w, h: f.h, fps, duration, autoDuration,
       tracks: [
         { id: 'V3', kind: 'video', name: 'Graphics' }, { id: 'V2', kind: 'video', name: 'Overlay' }, { id: 'V1', kind: 'video', name: 'Picture' },
         { id: 'A1', kind: 'audio', role: 'music', name: 'Music' }, { id: 'A2', kind: 'audio', role: 'sfx', name: 'SFX' }, { id: 'A3', kind: 'audio', role: 'speech', name: 'Voice' },
@@ -133,6 +135,8 @@
     set_project(p, a) {
       for (const k of ['name', 'duration', 'fps', 'client']) if (a[k] != null) p[k] = a[k];
       if (a.format && FORMATS[a.format]) { p.format = a.format; p.w = FORMATS[a.format].w; p.h = FORMATS[a.format].h; }
+      if (a.w && a.h) { p.w = Math.round(a.w / 2) * 2; p.h = Math.round(a.h / 2) * 2; p.format = aspectName(p.w, p.h); }
+      if (a.autoDuration != null) p.autoDuration = !!a.autoDuration;
       return 'project settings updated';
     },
     set_track(p, a) { p.trackState[a.track] = Object.assign({}, p.trackState[a.track], a.state); return `track ${a.track}: ${JSON.stringify(a.state)}`; },
@@ -202,6 +206,7 @@
       const cs = p.clips.filter(c => c.track === tr).sort((a, b) => a.start - b.start);
       for (let i = 0; i < cs.length; i++) {
         const c = cs[i];
+        if (c.disabled) continue;
         if (t >= c.start && t < clipEnd(c)) {
           const tr0 = c.transition; let prog = 1;
           if (tr0 && t < c.start + tr0.dur) {
@@ -404,7 +409,7 @@
     const anySolo = Object.values(st).some(s => s.solo);
     return p.clips.filter(c => {
       const tr = p.tracks.find(t => t.id === c.track); if (!tr) return false;
-      const s = st[c.track] || {}; if (s.mute || (anySolo && !s.solo)) return false;
+      const s = st[c.track] || {}; if (c.disabled || s.mute || (anySolo && !s.solo)) return false;
       if (tr.kind === 'audio') return !role || tr.role === role;
       if (c.type === 'video' && !c.muteAudio) { const m = mediaOf(p, c); return m && m.hasAudio && (!role || (c.audioRole || 'speech') === role); }
       return false;
@@ -438,5 +443,7 @@
   function toVTT(words) { return 'WEBVTT\n\n' + cues(words).map(c => `${ts(c.s, '.')} --> ${ts(c.e, '.')}\n${c.text}\n`).join('\n'); }
   function toTXT(words) { return cues(words, 40, 1.2).map(c => `[${ts(c.s).slice(3, 8)}] ${c.text}`).join('\n'); }
 
-  G.TF = { uid, clamp, ease, E, FORMATS, newProject, normClip, OPS, History, layersAt, propsAt, Compositor, audioClips, timelineWords, toSRT, toVTT, toTXT, clipEnd, mediaOf, trackOrder, isVisualTrack };
+  // timeline length: fixed, or (autoDuration) follows the last clip
+  function projectDuration(p) { if (!p.autoDuration) return p.duration; const e = Math.max(0, ...p.clips.map(clipEnd)); return Math.max(1, +e.toFixed(3)); }
+  G.TF = { projectDuration, aspectName, uid, clamp, ease, E, FORMATS, newProject, normClip, OPS, History, layersAt, propsAt, Compositor, audioClips, timelineWords, toSRT, toVTT, toTXT, clipEnd, mediaOf, trackOrder, isVisualTrack };
 })(typeof window !== 'undefined' ? window : globalThis);

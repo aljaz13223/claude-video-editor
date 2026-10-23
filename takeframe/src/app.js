@@ -16,12 +16,16 @@ let aiBusy = false, aiMessages = [], aiTouched = new Set(), scopeMode = 'project
 // =====================================================================================
 // START SCREEN
 // =====================================================================================
-let srcItems = [], connectedFolder = null;
+let srcItems = [], connectedFolder = null, pickedFiles = [];
+const RES_PRESETS = [
+  ['1080x1920', '9:16', 'Reels · TikTok · Shorts'], ['1920x1080', '16:9', 'YouTube · 1080p'], ['3840x2160', '16:9', '4K UHD'], ['1080x1080', '1:1', 'Square feed'],
+  ['1080x1350', '4:5', 'Feed portrait'], ['2160x3840', '9:16', '4K vertical'], ['1280x720', '16:9', '720p · light'], ['custom', 'Custom', 'any size']];
+let resSel = '1080x1920';
 async function initStart() {
   env = await host.invoke('env');
   const chips = [
     [env.apiKey, 'Claude API', env.apiKey ? `${env.model}` : 'ANTHROPIC_API_KEY is not set — run SET-API-KEY.bat'],
-    [env.python, 'Audio engine', env.python ? 'local: DeepFilterNet · Whisper · Demucs' : 'run INSTALL-AUDIO.bat'],
+    [env.python, 'Audio engine', env.python ? 'local: DeepFilterNet · Whisper · Demucs' : 'run INSTALL.bat'],
     [env.ffmpeg, 'FFmpeg', env.ffmpeg ? 'ok' : 'install ffmpeg (winget install Gyan.FFmpeg)'],
     [!!env.gpu, env.gpu ? env.gpu.replace('NVIDIA GeForce ', '') : 'GPU', env.gpu ? 'CUDA' : 'no NVIDIA GPU found — audio tools run on CPU'],
   ];
@@ -35,55 +39,63 @@ async function initStart() {
       d.onclick = () => openProjectFile(r.file); rec.appendChild(d);
     }
   }
+  renderRes(); setTimeout(() => $('#btnFolder').focus(), 50);
 }
-function renderSources() {
-  const L = $('#srcList'); L.innerHTML = '';
-  for (const s of srcItems) {
-    const m = s.media; const d = el('div', 'src' + (s.on ? '' : ' off'));
-    d.innerHTML = `<div class="th" style="background-image:url('${m.thumbUrl}')"></div><div class="nm" title="${esc(m.path)}">${esc(m.name)}</div>
-      <span class="badge">${m.type === 'video' ? fmtS(m.duration || 0) : m.type === 'audio' ? '♪ ' + fmtS(m.duration || 0) : 'IMG'}</span><span class="ck">✓</span>`;
-    d.onclick = () => { s.on = !s.on; renderSources(); };
-    L.appendChild(d);
+function renderRes() {
+  const g = $('#resGrid'); g.innerHTML = '';
+  for (const [k, ar, lab] of RES_PRESETS) {
+    const [w, h] = k === 'custom' ? [1, 1] : k.split('x').map(Number); const sc = 26 / Math.max(w, h);
+    const b = el('button', 'res' + (k === resSel ? ' on' : ''));
+    b.innerHTML = `<span class="res-ic">${k === 'custom' ? '<i class="dash"></i>' : `<i style="width:${Math.round(w * sc)}px;height:${Math.round(h * sc)}px"></i>`}</span><b>${k === 'custom' ? 'Custom' : w + ' × ' + h}</b><small>${ar} · ${lab}</small>`;
+    b.onclick = () => { resSel = k; renderRes(); };
+    g.appendChild(b);
   }
-  $('#folderInfo').textContent = connectedFolder ? `Connected: ${connectedFolder} · ${srcItems.length} files (click to exclude)` : 'A connected folder is read live: Claude sees every file in it.';
+  $('#resCustom').classList.toggle('on', resSel === 'custom');
 }
-async function addSources(args) {
-  toast('Reading files…');
-  const ms = await host.invoke('scan', args);
-  for (const m of ms) if (!srcItems.find(s => s.media.path === m.path)) srcItems.push({ media: m, on: true });
-  renderSources();
+function setFolder(d) {
+  connectedFolder = d; $('#folderPath').textContent = d || 'No folder selected'; $('#drop').classList.toggle('has', !!d);
+  if (d) host.invoke('list-dir', d).then(l => { const f = l.filter(x => !x.isDir), dirs = l.filter(x => x.isDir); $('#folderInfo').textContent = `${f.length} media file(s)${dirs.length ? ` · ${dirs.length} subfolder(s)` : ''}${pickedFiles.length ? ` · +${pickedFiles.length} single file(s)` : ''}`; }).catch(() => {});
 }
 function bindStart() {
-  $$('#npFormat button').forEach(b => b.onclick = () => { $$('#npFormat button').forEach(x => x.classList.toggle('on', x === b)); });
-  $('#btnFiles').onclick = async () => { const f = await host.invoke('pick-files'); if (f.length) addSources({ files: f }); };
-  $('#btnFolder').onclick = async () => { const d = await host.invoke('pick-folder', env.root); if (d) { connectedFolder = d; addSources({ folder: d }); } };
+  $('#btnFolder').onclick = async () => { const d = await host.invoke('pick-folder', connectedFolder || env.root); if (d) setFolder(d); };
+  $('#btnFiles').onclick = async e => { e.preventDefault(); const f = await host.invoke('pick-files'); if (f.length) { pickedFiles = [...new Set([...pickedFiles, ...f])]; setFolder(connectedFolder); if (!connectedFolder) { $('#folderPath').textContent = `${pickedFiles.length} file(s) selected`; $('#drop').classList.add('has'); } } };
   const drop = $('#drop');
   drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
   drop.ondragleave = () => drop.classList.remove('over');
-  drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); const files = [...e.dataTransfer.files].map(f => host.pathOf(f)).filter(Boolean); if (files.length) addSources({ files }); };
+  drop.ondrop = async e => {
+    e.preventDefault(); drop.classList.remove('over'); const paths = [...e.dataTransfer.files].map(f => host.pathOf(f)).filter(Boolean);
+    for (const p of paths) { const l = await host.invoke('list-dir', p).catch(() => null); if (l) { setFolder(p); } else pickedFiles.push(p); }
+    if (!connectedFolder && pickedFiles.length) { $('#folderPath').textContent = `${pickedFiles.length} file(s) selected`; $('#drop').classList.add('has'); }
+  };
+  $('#resW').onchange = $('#resH').onchange = () => { resSel = 'custom'; renderRes(); };
   $('#btnEmpty').onclick = () => createProject(false);
   $('#btnCreate').onclick = () => createProject(true);
   $('#btnOpen').onclick = () => openProjectFile(null);
   $('#btnDemo').onclick = () => openProjectFile(env.root + SEP + 'takeframe-projects' + SEP + 'Takeframe Launch' + SEP + 'project.takeframe.json');
+  document.addEventListener('keydown', e => { if (!$('#start').classList.contains('hidden') && e.key === 'Enter' && !['TEXTAREA', 'INPUT', 'SELECT'].includes(document.activeElement.tagName)) { e.preventDefault(); createProject(false); } });
 }
-function createProject(withClaude) {
-  const name = $('#npName').value.trim() || 'Untitled ' + new Date().toISOString().slice(5, 16).replace('T', ' ');
-  const client = $('#npClient').value; const format = $('#npFormat .on').dataset.v;
-  const p = TF.newProject({ name, client, format, fps: +$('#npFps').value, duration: +$('#npDur').value || 20 });
+async function createProject(withClaude) {
+  const [w, h] = resSel === 'custom' ? [+$('#resW').value || 1080, +$('#resH').value || 1920] : resSel.split('x').map(Number);
+  const base = connectedFolder ? connectedFolder.split(/[\\/]/).filter(Boolean).pop() : '';
+  const name = $('#npName').value.trim() || base || 'Untitled ' + new Date().toISOString().slice(5, 16).replace('T', ' ');
+  const client = $('#npClient').value;
+  const p = TF.newProject({ name, client, w, h, fps: +$('#npFps').value, duration: withClaude ? (+$('#npDur').value || 30) : 30, autoDuration: !withClaude });
   const date = new Date().toISOString().slice(0, 10);
   p.folder = client ? [env.root, client, '02-projekti', `${date}_${safeName(name)}`].join(SEP) : [env.root, 'takeframe-projects', safeName(name)].join(SEP);
   p.sourceFolder = connectedFolder;
-  p.media = srcItems.filter(s => s.on).map(s => Object.assign({ id: TF.uid('m') }, s.media));
-  const prompt = $('#npPrompt').value.trim();
+  toast(withClaude ? 'Reading your files for Claude…' : 'Opening…');
+  const files = [...pickedFiles]; const args = { files };
+  if (withClaude && connectedFolder) args.folder = connectedFolder;
+  p.media = (files.length || args.folder) ? (await host.invoke('scan', args)).map(m => Object.assign({ id: TF.uid('m') }, m)) : [];
+  const prompt = $('#npPrompt').value.trim(); pickedFiles = [];
   enterEditor(p);
-  if (withClaude) {
-    if (!env.apiKey) { toast('Set ANTHROPIC_API_KEY first (SET-API-KEY.bat).', 5000); return; }
-    const files = p.media.map(m => `- ${m.id}: ${m.name} (${m.type}${m.duration ? ', ' + m.duration.toFixed(1) + ' s' : ''})`).join('\n');
-    const ask = (prompt || `Make a ${p.duration} s ${p.format} video from these files.`) +
-      `\n\nThe human selected ${p.media.length} file(s) for the bin:\n${files || '(none — create everything with graphics and generated music)'}` +
-      `\n\nBuild the complete edit now: pick the right files, plan a storyboard, generate new music, add graphics, transitions and SFX, then check rendered frames and fix problems.`;
-    switchTab('right', 'claude'); runAI(ask, null);
-  }
+  if (!withClaude) return;
+  if (!env.apiKey) { toast('Set ANTHROPIC_API_KEY first (SET-API-KEY.bat).', 5000); return; }
+  const list = p.media.map(m => `- ${m.id}: ${m.name} (${m.type}${m.duration ? ', ' + m.duration.toFixed(1) + ' s' : ''})`).join('\n');
+  const ask = (prompt || `Make a ${p.duration} s ${p.w}×${p.h} video from these files.`) +
+    `\n\nThe bin has ${p.media.length} file(s):\n${list || '(none — create everything with graphics and generated music)'}` +
+    `\n\nBuild the complete edit now: pick the right files, plan a storyboard, generate new music, add graphics, transitions and SFX, then check rendered frames and fix problems.`;
+  switchTab('right', 'claude'); runAI(ask, null);
 }
 async function openProjectFile(file) {
   const p = await host.invoke('project-open', file).catch(e => { toast('Cannot open: ' + e.message); return null; });
@@ -102,9 +114,10 @@ function enterEditor(p) {
   $('#stage').innerHTML = '';
   $('#pName').value = P.name; updateMeta();
   renderAll(); fitStage(); save();
+  if (P.sourceFolder) { switchTab('left', 'folder'); openFolderPanel(P.sourceFolder); } else { switchTab('left', P.media.length ? 'media' : 'folder'); renderFolder(); }
   $('#chatLog').innerHTML = ''; chatMsg('ai', `Project “${P.name}” — ${P.format}, ${P.duration}s. Tell me what to make, or select a clip on the timeline and ask me to change only that part.`);
 }
-function updateMeta() { $('#pMeta').textContent = `${P.format} · ${P.w}×${P.h} · ${P.fps} fps · ${fmtS(P.duration)}${P.client ? ' · ' + P.client : ''}`; $('#tcDur').textContent = fmt(P.duration, P.fps); }
+function updateMeta() { const d = TF.projectDuration(P); $('#pMeta').textContent = `${P.w}×${P.h} · ${P.format} · ${P.fps} fps · ${fmtS(d)}${P.autoDuration ? ' (auto)' : ''}${P.client ? ' · ' + P.client : ''}`; $('#tcDur').textContent = fmt(d, P.fps); }
 function onChange(entry) {
   if (entry.by === 'claude') { aiTouched = new Set(entry.ids || []); }
   P = H.p; renderAll(); save(); renderHistory();
@@ -143,7 +156,7 @@ new ResizeObserver(() => fitStage()).observe(document.getElementById('viewport')
 
 // ---------------- playback + audio preview ----------------
 let raf = 0, t0 = 0, T0 = 0; const audioEls = new Map();
-function rangeEnd() { return P.outPoint != null ? P.outPoint : Math.max(P.duration, ...P.clips.map(TF.clipEnd), 0); }
+function rangeEnd() { return P.outPoint != null ? P.outPoint : P.autoDuration ? TF.projectDuration(P) : Math.max(P.duration, ...P.clips.map(TF.clipEnd), 0); }
 function play() {
   if (playing) return stop();
   if (T >= rangeEnd() - 1 / P.fps) T = P.inPoint ?? 0;
@@ -203,7 +216,7 @@ async function importToBin(args) {
 
 // ---------------- timeline ----------------
 const trackH = tr => { const snd = document.body.classList.contains('ws-sound'); const k = P.tracks.find(t => t.id === tr); const nv = P.tracks.filter(t => t.kind === 'video').length; return k.kind === 'video' ? (snd ? 34 : nv > 4 ? 38 : 56) : (snd ? 70 : 42); };
-function tlWidth() { return (Math.max(P.duration, ...P.clips.map(TF.clipEnd), 0) + 12) * pps; }
+function tlWidth() { return (Math.max(P.autoDuration ? 30 : P.duration, ...P.clips.map(TF.clipEnd), 0) + 20) * pps; }
 function renderTimeline() {
   const heads = $('#heads'), lanes = $('#lanes'); heads.innerHTML = ''; lanes.innerHTML = '';
   const W = tlWidth(); lanes.style.width = W + 'px';
@@ -230,7 +243,8 @@ function clipEl(c, tr, st) {
   const d = el('div', `clip ${c.type} ${role}${sel.has(c.id) ? ' sel' : ''}${aiTouched.has(c.id) ? ' claude' : ''}${st.mute || c.muteAudio && c.type === 'audio' ? ' muted' : ''}`);
   d.style.left = c.start * pps + 'px'; d.style.width = Math.max(3, c.dur * pps) + 'px'; d.dataset.id = c.id;
   const name = c.type === 'title' ? '<b>T</b> ' + esc((c.text || '').replace(/\n/g, ' ')) : c.type === 'shape' ? '■ ' + esc(typeof c.fill === 'string' ? c.fill : c.fill.kind) : esc(m ? m.name : '?');
-  d.innerHTML = `<div class="cn">${name}${c.speed !== 1 ? ` · ${Math.round(c.speed * 100)}%` : ''}${m && m.enhanced && c.useEnhanced !== false ? ' · ENH' : ''}</div>`;
+  d.innerHTML = `<div class="cn">${name}</div>${clipBadges(c, m)}`;
+  if (c.disabled) d.classList.add('off');
   if ((c.type === 'video' || c.type === 'image') && m && m.thumbUrl) { const f = el('div', 'film'); f.style.backgroundImage = `url('${m.thumbUrl}')`; d.appendChild(f); }
   if (c.type === 'audio' || (c.type === 'video' && m && m.hasAudio && trackH(tr.id) > 50)) drawWave(d, c, m);
   if (c.transition) { const t = el('div', 'tr'); t.style.width = Math.min(c.dur, c.transition.dur) * pps + 'px'; t.title = c.transition.type; d.appendChild(t); }
@@ -239,7 +253,7 @@ function clipEl(c, tr, st) {
   if (c.fadeOut) { const f = el('div', 'fade'); f.style.cssText = `right:0;width:${c.fadeOut * pps}px;background:linear-gradient(to top left,rgba(0,0,0,.45) 50%,transparent 51%)`; d.appendChild(f); }
   d.appendChild(el('div', 'h l')); d.appendChild(el('div', 'h r'));
   d.onpointerdown = e => clipDown(e, c, d);
-  d.oncontextmenu = e => { e.preventDefault(); if (!sel.has(c.id)) { sel = new Set([c.id]); renderTimeline(); renderInspector(); } $('#askText').focus(); };
+  d.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); if (!sel.has(c.id)) { sel = new Set([c.id]); renderTimeline(); renderInspector(); } clipMenu(e, c); };
   return d;
 }
 const peaksCache = new Map();
@@ -358,9 +372,13 @@ function lanesDown(e) {
 async function laneDrop(e, tr, ln) {
   e.preventDefault(); ln.classList.remove('drop');
   const rect = $('#lanes').getBoundingClientRect(); const t = snapT(Math.max(0, (e.clientX - rect.left) / pps)); showSnap(null);
-  const mid = e.dataTransfer.getData('tf/media'), trans = e.dataTransfer.getData('tf/trans'), sfx = e.dataTransfer.getData('tf/sfx');
+  const mid = e.dataTransfer.getData('tf/media'), trans = e.dataTransfer.getData('tf/trans'), sfx = e.dataTransfer.getData('tf/sfx'), file = e.dataTransfer.getData('tf/file');
+  const look = e.dataTransfer.getData('tf/look'), motion = e.dataTransfer.getData('tf/motion'), tanim = e.dataTransfer.getData('tf/tanim');
+  const onClip = e.target.closest('.clip')?.dataset.id;
+  if (file) { await placeFile(file, t, tr.id); return; }
+  if (look || motion || tanim) { if (!onClip) return toast('Drop it onto a clip'); dropPreset(onClip, look, motion, tanim); return; }
   if (mid) { const m = P.media.find(x => x.id === mid); if (!m) return; const type = m.type === 'audio' ? 'audio' : m.type; if (!kindOk(tr.id, { type })) { toast(type === 'audio' ? 'Drop audio on A1–A3' : 'Drop pictures on V1–V3'); return; } insertMedia(m, tr.id, t); }
-  else if (trans) { const id = e.target.closest('.clip')?.dataset.id; if (id) apply({ op: 'set_transition', id, type: trans, dur: .4 }, 'Transition ' + trans); }
+  else if (trans) { if (onClip) apply({ op: 'set_transition', id: onClip, type: trans, dur: .4 }, 'Transition ' + trans); else toast('Drop the transition onto the clip it should lead into'); }
   else if (sfx) { if (tr.kind !== 'audio') return toast('Drop SFX on an audio track'); await addSfx(JSON.parse(sfx), tr.id, t); }
   else if (e.dataTransfer.files.length) { const files = [...e.dataTransfer.files].map(f => host.pathOf(f)); const ms = await host.invoke('scan', { files }); if (!ms.length) return; apply({ op: 'add_media', media: ms }, 'Import'); const m = P.media.find(x => x.path === ms[0].path); if (m && kindOk(tr.id, { type: m.type === 'audio' ? 'audio' : m.type })) insertMedia(m, tr.id, t); }
 }
@@ -497,7 +515,7 @@ function bindInspector(c, m) {
 }
 function projectInspector() {
   return sec('Project', `${row('Name', `<input id="ppName" value="${esc(P.name)}">`)}${row('Format', `<select id="ppFormat">${Object.keys(TF.FORMATS).map(f => `<option ${f === P.format ? 'selected' : ''}>${f}</option>`).join('')}</select>`)}
-    ${row('Duration', `<input id="ppDur" type="number" step="0.5" value="${P.duration}">`)}${row('FPS', `<select id="ppFps">${[24, 25, 30, 60].map(f => `<option ${f === P.fps ? 'selected' : ''}>${f}</option>`).join('')}</select>`)}
+    ${row('Duration', `<input id="ppDur" type="number" step="0.5" value="${TF.projectDuration(P)}" ${P.autoDuration ? 'disabled' : ''}>`)}${row('Auto length', `<label class="muted"><input type="checkbox" id="ppAuto" ${P.autoDuration ? 'checked' : ''}> ends with the last clip</label>`)}${row('Resolution', `<span class="report" style="margin:0">${P.w} × ${P.h}</span>`)}${row('FPS', `<select id="ppFps">${[24, 25, 30, 60].map(f => `<option ${f === P.fps ? 'selected' : ''}>${f}</option>`).join('')}</select>`)}
     <div class="report">${esc(P.folder || '')}${P.sourceFolder ? '\nconnected: ' + esc(P.sourceFolder) : ''}</div>
     <div class="irow-btns">${P.sourceFolder ? '<button class="btn sm" id="ppRescan">Rescan folder</button>' : ''}<button class="btn sm" id="ppReveal">Show folder</button></div>`, true) +
     `<div class="empty">Select a clip to edit it.<br>Click a clip, then type in the ✦ box to have Claude change only that part.</div>`;
@@ -506,6 +524,7 @@ function bindProjectInspector() {
   $('#ppName').onchange = e => { apply({ op: 'set_project', name: e.target.value }, 'Rename'); $('#pName').value = P.name; };
   $('#ppFormat').onchange = e => { apply({ op: 'set_project', format: e.target.value }, 'Format'); comp.nodes.clear(); $('#stage').innerHTML = ''; fitStage(); drawFrame(); };
   $('#ppDur').onchange = e => apply({ op: 'set_project', duration: +e.target.value }, 'Duration');
+  $('#ppAuto').onchange = e => { apply({ op: 'set_project', autoDuration: e.target.checked, duration: TF.projectDuration(P) }, 'Auto length'); renderInspector(); };
   $('#ppFps').onchange = e => apply({ op: 'set_project', fps: +e.target.value }, 'FPS');
   const rs = $('#ppRescan'); if (rs) rs.onclick = async () => { const ms = await host.invoke('scan', { folder: P.sourceFolder }); const nw = ms.filter(m => !P.media.find(x => x.path === m.path)); if (nw.length) apply({ op: 'add_media', media: nw }, `+${nw.length} new file(s)`); else toast('No new files'); };
   $('#ppReveal').onclick = () => host.invoke('open-path', P.folder);
@@ -531,9 +550,7 @@ const SHAPES = [
 ];
 function addTitle(pr, at, track = 'V3') { const c = { track, type: 'title', start: at, dur: 3, text: pr.text, style: Object.assign({}, pr.style), anim: Object.assign({}, pr.anim) }; apply({ op: 'add_clip', clip: c }, 'Title ' + pr.n); const nc = P.clips[P.clips.length - 1]; sel = new Set([nc.id]); renderTimeline(); renderInspector(); }
 async function fillLeft() {
-  $('#fxTrans').innerHTML = ''; for (const t of TRANS) { const b = el('div', 'chip2', t); b.draggable = true; b.ondragstart = e => e.dataTransfer.setData('tf/trans', t); b.onclick = () => { for (const id of sel) H.apply({ op: 'set_transition', id, type: t, dur: .4 }, 'you', 'Transition'); if (!sel.size) toast('Select a clip or drag the transition onto it'); }; $('#fxTrans').appendChild(b); }
-  $('#fxLooks').innerHTML = ''; for (const [n, fx] of Object.entries(LOOKS)) { const b = el('div', 'chip2', n); b.onclick = () => { if (!sel.size) return toast('Select clips first'); apply([...sel].map(id => ({ op: 'update_clip', id, patch: { fx: Object.assign({ brightness: 1, contrast: 1, saturate: 1, temp: 0, hue: 0, grayscale: 0 }, fx) } })), 'Look ' + n); }; $('#fxLooks').appendChild(b); }
-  $('#fxMotion').innerHTML = ''; for (const [n, a] of Object.entries(MOTION)) { const b = el('div', 'chip2', n); b.onclick = () => { const ids = [...sel].filter(id => { const c = P.clips.find(x => x.id === id); return c && (c.type === 'image' || c.type === 'video'); }); if (!ids.length) return toast('Select picture clips'); apply(ids.map(id => ({ op: 'update_clip', id, patch: { anim: a } })), n); }; $('#fxMotion').appendChild(b); }
+  fillEffects();
   $('#txtPresets').innerHTML = ''; for (const pr of TITLE_PRESETS) { const b = el('div', 'pre'); b.innerHTML = `<span style="font-family:'${pr.style.font}';font-weight:${pr.style.weight};font-style:${pr.style.italic ? 'italic' : 'normal'};font-stretch:${pr.style.stretch || 100}%;font-size:15px;${pr.style.bg ? `background:${pr.style.bg};color:${pr.style.color};padding:2px 5px` : ''};${pr.style.case === 'upper' ? 'text-transform:uppercase' : ''}">${esc(pr.n)}</span>`; b.onclick = () => addTitle(pr, T); $('#txtPresets').appendChild(b); }
   $('#shapePresets').innerHTML = ''; for (const s of SHAPES) { const b = el('div', 'pre', `<span style="font-size:11px">${s.n}</span>`); const f = s.fill; b.style.background = typeof f === 'string' ? f : f.kind === 'gradient' ? `linear-gradient(${f.angle}deg,${f.stops})` : f.kind === 'radial' ? `radial-gradient(circle,${f.stops})` : '#14171b'; b.onclick = () => { const tr = s.n === 'Bar' || s.n === 'Ring' ? 'V2' : 'V1'; apply({ op: 'add_clip', clip: { track: tr, type: 'shape', start: T, dur: 3, fill: JSON.parse(JSON.stringify(f)) } }, 'Shape ' + s.n); }; $('#shapePresets').appendChild(b); }
   try { const st = await host.invoke('music-styles'); for (const [k, v] of Object.entries(st)) if (k !== 'raw') $('#musStyle').appendChild(el('option', '', esc(v))).value = k; } catch {}
@@ -665,15 +682,11 @@ $$('#ws button').forEach(b => b.onclick = () => {
 });
 function setTool(t) { tool = t; $$('#tools button').forEach(b => b.classList.toggle('on', b.dataset.tool === t)); $('#lanes').style.cursor = t === 'razor' ? 'crosshair' : t === 'text' ? 'text' : ''; }
 $$('#tools button').forEach(b => b.onclick = () => setTool(b.dataset.tool));
-$('#tSnap').onclick = e => { snapOn = !snapOn; e.target.classList.toggle('on', snapOn); };
-$('#tBeats').onclick = e => { barsOn = !barsOn; e.target.classList.toggle('on', barsOn); renderTimeline(); };
 $('#tSafe').onclick = e => { e.target.classList.toggle('on'); $('#safe').classList.toggle('on'); };
 $('#monZoom').onchange = fitStage;
 $('#tZoom').oninput = e => { pps = +e.target.value; renderTimeline(); };
-$('#tSplit').onclick = () => splitAtPlayhead();
-$('#tDel').onclick = () => delSel(true);
-$('#tMarker').onclick = () => apply({ op: 'add_marker', t: T, name: 'Marker ' + (P.markers.length + 1) }, 'Marker');
 $('#lanes').addEventListener('pointerdown', lanesDown);
+$('#lanes').addEventListener('contextmenu', e => { if (e.target.closest('.clip')) return; e.preventDefault(); const r = $('#lanes').getBoundingClientRect(); laneMenu(e, laneAt(e.clientY), snapT((e.clientX - r.left) / pps)); });
 $('#bPlay').onclick = play; $('#bStart').onclick = () => seek(0); $('#bEnd').onclick = () => seek(rangeEnd());
 $('#bPrev').onclick = () => seek(T - 1 / P.fps); $('#bNext').onclick = () => seek(T + 1 / P.fps);
 $('#bIn').onclick = () => apply({ op: 'set_in_out', in: T }, 'Mark in'); $('#bOut').onclick = () => apply({ op: 'set_in_out', out: T }, 'Mark out');
@@ -696,39 +709,4 @@ function splitAtPlayhead() { const ids = sel.size ? [...sel] : null; if (ids) ap
 function delSel(ripple) { if (!sel.size) return; apply({ op: 'delete_clip', ids: [...sel], ripple }, ripple ? 'Ripple delete' : 'Delete'); sel = new Set(); renderAll(); }
 function editPoints() { const s = new Set([0]); for (const c of P.clips) { s.add(c.start); s.add(TF.clipEnd(c)); } return [...s].sort((a, b) => a - b); }
 
-document.addEventListener('keydown', e => {
-  if ($('#editor').classList.contains('hidden') || $('#exportDlg').open) return;
-  const tag = (document.activeElement || {}).tagName; if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') { if (e.key === 'Escape') document.activeElement.blur(); return; }
-  const k = e.key, ctrl = e.ctrlKey || e.metaKey; const f = 1 / P.fps;
-  if (k === ' ') { e.preventDefault(); play(); }
-  else if (ctrl && k.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? H.doRedo() : H.doUndo(); }
-  else if (ctrl && k.toLowerCase() === 'y') { e.preventDefault(); H.doRedo(); }
-  else if (ctrl && k.toLowerCase() === 'k') { e.preventDefault(); splitAtPlayhead(); }
-  else if (ctrl && k.toLowerCase() === 'd') { e.preventDefault(); if (sel.size) apply([...sel].map(id => ({ op: 'set_transition', id, type: 'crossfade', dur: .4 })), 'Default transition'); }
-  else if (ctrl && k.toLowerCase() === 's') { e.preventDefault(); save(); toast('Saved'); }
-  else if (ctrl && k.toLowerCase() === 'e') { e.preventDefault(); openExport(); }
-  else if (ctrl && k.toLowerCase() === 'a') { e.preventDefault(); sel = new Set(P.clips.map(c => c.id)); renderTimeline(); renderInspector(); }
-  else if (ctrl && k.toLowerCase() === 'c') { clipboard = P.clips.filter(c => sel.has(c.id)).map(c => JSON.parse(JSON.stringify(c))); toast(`Copied ${clipboard.length}`); }
-  else if (ctrl && k.toLowerCase() === 'v') { if (!clipboard || !clipboard.length) return; const s0 = Math.min(...clipboard.map(c => c.start)); apply(clipboard.map(c => ({ op: 'add_clip', clip: Object.assign({}, c, { id: TF.uid(), start: T + c.start - s0 }) })), 'Paste'); }
-  else if (k === 'Delete' || k === 'Backspace') { e.preventDefault(); delSel(e.shiftKey); }
-  else if (e.altKey && (k === 'ArrowLeft' || k === 'ArrowRight')) { e.preventDefault(); const d = (k === 'ArrowLeft' ? -1 : 1) * f * (e.shiftKey ? 5 : 1); apply([...sel].map(id => { const c = P.clips.find(x => x.id === id); return { op: 'move_clip', id, start: c.start + d }; }), 'Nudge'); }
-  else if (k === 'ArrowLeft') { e.preventDefault(); seek(T - (e.shiftKey ? 1 : f)); }
-  else if (k === 'ArrowRight') { e.preventDefault(); seek(T + (e.shiftKey ? 1 : f)); }
-  else if (k === 'ArrowUp') { e.preventDefault(); const p = editPoints().filter(x => x < T - 1e-3).pop(); if (p != null) seek(p); }
-  else if (k === 'ArrowDown') { e.preventDefault(); const p = editPoints().find(x => x > T + 1e-3); if (p != null) seek(p); }
-  else if (k === 'Home') seek(0); else if (k === 'End') seek(rangeEnd());
-  else if (k === 'i' || k === 'I') apply({ op: 'set_in_out', in: T }, 'Mark in');
-  else if (k === 'o' || k === 'O') apply({ op: 'set_in_out', out: T }, 'Mark out');
-  else if (k === 'x' && e.altKey) apply({ op: 'set_in_out', in: null, out: null }, 'Clear in/out');
-  else if (k === 'm' || k === 'M') apply({ op: 'add_marker', t: T, name: 'Marker ' + (P.markers.length + 1) }, 'Marker');
-  else if (k === 'v' || k === 'V') setTool('select'); else if (k === 'c' || k === 'C') setTool('razor'); else if (k === 'b' || k === 'B') setTool('ripple'); else if (k === 't' || k === 'T') setTool('text');
-  else if (k === 's' || k === 'S') $('#tSnap').click();
-  else if (k === 'l' || k === 'L') { if (!playing) play(); } else if (k === 'k' || k === 'K') { if (playing) stop(); } else if (k === 'j' || k === 'J') seek(T - 1);
-  else if (k === '+' || k === '=') { pps = Math.min(400, pps * 1.25); $('#tZoom').value = pps; renderTimeline(); }
-  else if (k === '-') { pps = Math.max(10, pps / 1.25); $('#tZoom').value = pps; renderTimeline(); }
-  else if (k === '\\') { pps = Math.max(10, ($('#lanesWrap').clientWidth - 40) / Math.max(1, rangeEnd())); $('#tZoom').value = pps; renderTimeline(); }
-  else if (k === 'Escape') { sel = new Set(); renderTimeline(); renderInspector(); }
-});
-
-// boot
-bindStart(); initStart(); fillLeft();
+// boot happens at the end of ui2.js
