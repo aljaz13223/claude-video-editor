@@ -518,3 +518,11 @@ dialog.keys{width:min(900px,94vw);max-height:86vh;padding:18px 20px;overflow:aut
 .sfx-dir .sfx-i{padding:4px 8px 4px 14px;border-bottom:0;border-top:1px solid #15181c}
 .sfx-dir .sfx-i:hover{background:var(--bg3)}
 .sfx-i small{font:9.5px var(--mono);color:var(--dim)}
+
+.cap-box{margin-bottom:6px}
+.cap-styles{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:6px}
+.cap-s{height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#2a2f36 linear-gradient(160deg,#3b4552,#16191d);border:1px solid var(--line2);border-radius:3px;cursor:pointer;font-size:12px}
+.cap-s small{font-size:9.5px;color:#c9ced6}
+.cap-s.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.cap-pos{margin-bottom:6px}.cap-pos button{flex:1}
+.cap-hint{font-size:10px;line-height:1.4;margin:5px 0 0}

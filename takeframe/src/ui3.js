@@ -112,6 +112,14 @@ $('#rightTabs [data-t="flow"]').addEventListener('click', async () => { styleLib
 // =====================================================================================
 // AUTO CAPTIONS
 // =====================================================================================
+const CAP_STYLES = {
+  box: { n: 'Dark box', d: 'White on a dark box — readable anywhere', st: { font: 'Archivo', weight: 850, stretch: 88, color: '#ffffff', bg: 'rgba(10,11,13,.82)' }, anim: 'pop' },
+  bold: { n: 'Bold outline', d: 'Big white words with a shadow, no box', st: { font: 'Anton', weight: 400, color: '#ffffff', case: 'upper', shadow: true, stroke: '2px rgba(0,0,0,.55)' }, anim: 'pop' },
+  accent: { n: 'Accent', d: 'Black words on a bright lime label', st: { font: 'Space Grotesk', weight: 700, color: '#0a0b0d', bg: '#d6ff3d' }, anim: 'slide' },
+  clean: { n: 'Clean', d: 'Calm sentence case, soft rise', st: { font: 'Inter', weight: 700, color: '#ffffff', shadow: true }, anim: 'rise' },
+  type: { n: 'Typewriter', d: 'Mono letters typed on', st: { font: 'JetBrains Mono', weight: 600, color: '#ffffff', bg: 'rgba(10,11,13,.75)' }, anim: 'type' },
+};
+let capStyle = 'box', capPos = 'low';
 async function makeCaptions() {
   if (!P) return;
   let src = P.clips.filter(c => sel.has(c.id));
@@ -150,17 +158,30 @@ async function makeCaptions() {
   else ops.push({ op: 'delete_clip', ids: P.clips.filter(c => c.track === tr.id && c.tag === 'caption').map(c => c.id) });
   for (const x of groups) ops.push({ op: 'add_clip', clip: { track: tr.id, type: 'title', tag: 'caption', start: +x.s.toFixed(3), dur: +Math.max(.2, x.end - x.s).toFixed(3),
     text: x.words.map(w => w.w).join(' ').replace(/\s+([,.!?])/g, '$1'),
-    style: { font: 'Archivo', size, weight: 850, stretch: 88, color: '#ffffff', bg: 'rgba(10,11,13,.82)', width: .9, lh: 1.05, tracking: -.01 },
-    anim: { in: 'pop', out: 'none', inDur: .16, stagger: .035, ease: 'backOut' }, props: { y: Math.round(P.h * (vertical ? .2 : .32)) } } });
+    style: Object.assign({ size, width: .9, lh: 1.05, tracking: -.01 }, CAP_STYLES[capStyle].st),
+    anim: { in: CAP_STYLES[capStyle].anim, out: 'none', inDur: .16, stagger: CAP_STYLES[capStyle].anim === 'type' ? .025 : .035, ease: 'backOut' },
+    props: { y: Math.round(P.h * (capPos === 'mid' ? 0 : capPos === 'top' ? -(vertical ? .22 : .3) : (vertical ? .2 : .32))) } } });
   apply(ops, `Captions (${groups.length})`);
   toast(`${groups.length} captions on ${tr.id} — select one and edit the style, Claude can restyle all`, 4000);
 }
-ACTIONS.push({ group: 'Audio', id: 'captions.make', label: 'Auto captions from speech', def: ['Ctrl+Shift+C'], run: makeCaptions });
+ACTIONS.push({ group: 'Text', id: 'captions.make', label: 'Auto captions from speech', def: ['Ctrl+Shift+C'], run: makeCaptions });
 ACT['captions.make'] = ACTIONS[ACTIONS.length - 1];
 ACTIONS.push({ group: 'Claude', id: 'flow.open', label: 'Workflow (6 steps)', def: ['Ctrl+Shift+W'], run: () => { switchTab('right', 'flow'); $('#rightTabs [data-t="flow"]').click(); } });
 ACT['flow.open'] = ACTIONS[ACTIONS.length - 1];
-// button in the Audio panel
-(() => { const gen = $('.musicgen'); if (!gen) return; const h = el('div', 'sec-h', 'Captions <em>from the transcript</em>'); const b = el('button', 'btn wide', '✦ Auto captions <kbd>Ctrl+Shift+C</kbd>'); b.onclick = makeCaptions; gen.after(h, b); })();
+// captions live in the Text panel
+(() => {
+  const host_ = $('[data-p="text"]'); if (!host_) return;
+  const box = el('div', 'cap-box');
+  box.innerHTML = `<div class="sec-h">Captions <em>from what is said</em></div>
+    <div class="cap-styles">${Object.entries(CAP_STYLES).map(([k, v]) => `<button class="cap-s${k === capStyle ? ' on' : ''}" data-k="${k}" title="${esc(v.d)}"><span style="font-family:'${v.st.font}';font-weight:${v.st.weight};color:${v.st.color};${v.st.bg ? `background:${v.st.bg};padding:1px 5px;` : ''}${v.st.case === 'upper' ? 'text-transform:uppercase;' : ''}${v.st.shadow ? 'text-shadow:0 2px 6px #000;' : ''}">say it</span><small>${esc(v.n)}</small></button>`).join('')}</div>
+    <div class="seg sm cap-pos"><button data-v="top">Top</button><button data-v="mid">Middle</button><button data-v="low" class="on">Lower third</button></div>
+    <button class="btn wide primary" id="capGo">✦ Auto captions <kbd>Ctrl+Shift+C</kbd></button>
+    <p class="muted cap-hint">Uses the selected clips, or every speech clip on the voice tracks. Transcribes first if needed. Run again to restyle — old captions are replaced.</p>`;
+  host_.prepend(box);
+  box.querySelectorAll('.cap-s').forEach(b => b.onclick = () => { capStyle = b.dataset.k; box.querySelectorAll('.cap-s').forEach(x => x.classList.toggle('on', x === b)); });
+  box.querySelectorAll('.cap-pos button').forEach(b => b.onclick = () => { capPos = b.dataset.v; box.querySelectorAll('.cap-pos button').forEach(x => x.classList.toggle('on', x === b)); });
+  $('#capGo').onclick = makeCaptions;
+})();
 
 // =====================================================================================
 // AUDIO EFFECTS + SOUND EFFECT FOLDERS
@@ -177,7 +198,6 @@ const AFX = {
   mute: { label: 'Mute', desc: 'Silence the clip', ic: '✕', patch: c => (c.type === 'video' ? { muteAudio: true } : { volume: -60 }) },
   reset: { label: 'Reset audio', desc: 'Gain, pan and fades back to 0', ic: '↺', patch: c => ({ volume: 0, pan: 0, fadeIn: 0, fadeOut: 0, muteAudio: false }) },
   enhance: { label: 'Enhance speech', desc: 'Remove noise and room, like Adobe Podcast', ic: '✦', run: cs => { sel = new Set([cs[0].id]); renderTimeline(); enhanceSel(); } },
-  captions: { label: 'Auto captions', desc: 'Captions from what is said', ic: 'Cc', run: cs => { sel = new Set(cs.map(c => c.id)); makeCaptions(); } },
 };
 const SFX_GROUPS = [['whoosh', 'Whooshes', 'transitions, fast moves'], ['riser', 'Risers', 'build-up before a drop or cut'], ['hit', 'Hits & impacts', 'logo, drop, big reveal'], ['impact', 'Hits & impacts', ''], ['click', 'Clicks', 'text, cursor, small pops'], ['ui', 'UI sounds', 'success, fail, buttons'], ['scifi', 'Sci-fi', 'tech, digital'], ['', 'Other', '']];
 const sfxGroupOf = n => { const k = n.toLowerCase(); if (k.includes('impact')) return 'Hits & impacts'; const g = SFX_GROUPS.find(([p]) => p && k.startsWith(p)); return g ? g[1] : 'Other'; };
