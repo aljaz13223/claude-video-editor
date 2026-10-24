@@ -373,9 +373,10 @@ async function laneDrop(e, tr, ln) {
   e.preventDefault(); ln.classList.remove('drop');
   const rect = $('#lanes').getBoundingClientRect(); const t = snapT(Math.max(0, (e.clientX - rect.left) / pps)); showSnap(null);
   const mid = e.dataTransfer.getData('tf/media'), trans = e.dataTransfer.getData('tf/trans'), sfx = e.dataTransfer.getData('tf/sfx'), file = e.dataTransfer.getData('tf/file');
-  const look = e.dataTransfer.getData('tf/look'), motion = e.dataTransfer.getData('tf/motion'), tanim = e.dataTransfer.getData('tf/tanim');
+  const look = e.dataTransfer.getData('tf/look'), motion = e.dataTransfer.getData('tf/motion'), tanim = e.dataTransfer.getData('tf/tanim'), afx = e.dataTransfer.getData('tf/afx');
   const onClip = e.target.closest('.clip')?.dataset.id;
   if (file) { await placeFile(file, t, tr.id); return; }
+  if (afx) { if (!onClip) return toast('Drop it onto an audio or video clip'); applyTo('afx', afx, [onClip]); return; }
   if (look || motion || tanim) { if (!onClip) return toast('Drop it onto a clip'); dropPreset(onClip, look, motion, tanim); return; }
   if (mid) { const m = P.media.find(x => x.id === mid); if (!m) return; const type = m.type === 'audio' ? 'audio' : m.type; if (!kindOk(tr.id, { type })) { toast(type === 'audio' ? 'Drop audio on A1–A3' : 'Drop pictures on V1–V3'); return; } insertMedia(m, tr.id, t); }
   else if (trans) { if (onClip) apply({ op: 'set_transition', id: onClip, type: trans, dur: .4 }, 'Transition ' + trans); else toast('Drop the transition onto the clip it should lead into'); }
@@ -554,9 +555,9 @@ async function fillLeft() {
   $('#txtPresets').innerHTML = ''; for (const pr of TITLE_PRESETS) { const b = el('div', 'pre'); b.innerHTML = `<span style="font-family:'${pr.style.font}';font-weight:${pr.style.weight};font-style:${pr.style.italic ? 'italic' : 'normal'};font-stretch:${pr.style.stretch || 100}%;font-size:15px;${pr.style.bg ? `background:${pr.style.bg};color:${pr.style.color};padding:2px 5px` : ''};${pr.style.case === 'upper' ? 'text-transform:uppercase' : ''}">${esc(pr.n)}</span>`; b.onclick = () => addTitle(pr, T); $('#txtPresets').appendChild(b); }
   $('#shapePresets').innerHTML = ''; for (const s of SHAPES) { const b = el('div', 'pre', `<span style="font-size:11px">${s.n}</span>`); const f = s.fill; b.style.background = typeof f === 'string' ? f : f.kind === 'gradient' ? `linear-gradient(${f.angle}deg,${f.stops})` : f.kind === 'radial' ? `radial-gradient(circle,${f.stops})` : '#14171b'; b.onclick = () => { const tr = s.n === 'Bar' || s.n === 'Ring' ? 'V2' : 'V1'; apply({ op: 'add_clip', clip: { track: tr, type: 'shape', start: T, dur: 3, fill: JSON.parse(JSON.stringify(f)) } }, 'Shape ' + s.n); }; $('#shapePresets').appendChild(b); }
   try { const st = await host.invoke('music-styles'); for (const [k, v] of Object.entries(st)) if (k !== 'raw') $('#musStyle').appendChild(el('option', '', esc(v))).value = k; } catch {}
-  const sfx = await host.invoke('sfx-list'); const L = $('#sfxList'); L.innerHTML = sfx.length ? '' : '<div class="muted">SFX library not found.</div>';
-  for (const s of sfx) { const r = el('div', 'sfx-i', `<button>▶</button><span>${esc(s.name)}</span>`); r.draggable = true; r.ondragstart = e => e.dataTransfer.setData('tf/sfx', JSON.stringify(s)); r.querySelector('button').onclick = () => new Audio(s.url).play(); r.ondblclick = () => addSfx(s, 'A2', T); L.appendChild(r); }
+  SFX_LIB = await host.invoke('sfx-list'); renderSfxFolders();
 }
+let SFX_LIB = [];
 $('#musGo').onclick = async () => {
   const b = $('#musGo'); b.disabled = true; b.textContent = 'Composing…';
   try {

@@ -360,6 +360,11 @@ function applyTo(kind, name, ids) {
   if (kind === 'trans') return apply(cs.map(c => ({ op: 'set_transition', id: c.id, type: name, dur: .4 })), 'Transition ' + name);
   if (kind === 'look') { const ok = cs.filter(c => c.type !== 'audio'); return apply(ok.map(c => ({ op: 'update_clip', id: c.id, patch: { fx: Object.assign({}, FX_BASE, LOOKS[name]) } })), 'Look ' + name); }
   if (kind === 'motion') { const ok = cs.filter(c => c.type === 'image' || c.type === 'video'); if (!ok.length) return toast('Picture motion works on video and photo clips'); return apply(ok.map(c => ({ op: 'update_clip', id: c.id, patch: { anim: MOTION[name] } })), name); }
+  if (kind === 'afx') {
+    const ok = cs.filter(c => { const m = TF.mediaOf(P, c); return c.type === 'audio' || (m && m.hasAudio); }); if (!ok.length) return toast('Audio effects work on clips with sound');
+    const fx = AFX[name]; if (fx.run) return fx.run(ok);
+    return apply(ok.map(c => ({ op: 'update_clip', id: c.id, patch: fx.patch(c) })), fx.label);
+  }
   if (kind === 'tanim') { const ok = cs.filter(c => c.type === 'title'); if (!ok.length) return toast('Text animations work on text clips'); return apply(ok.map(c => ({ op: 'update_clip', id: c.id, patch: { anim: { in: name } } })), 'Text ' + name); }
 }
 function fillEffects() {
@@ -374,6 +379,8 @@ function fillEffects() {
   sect('Color looks', 'video & photos', 'look', FX_INFO.looks, (k, v) => el('div', 'fxc', `<span class="fx-sw" style="background:${v[2]}"></span><b>${v[0]}</b><small>${v[1]}</small>`));
   sect('Picture motion', 'video & photos', 'motion', FX_INFO.motion, (k, v) => el('div', 'fxc', `<span class="fx-ic mo"><i></i></span><b>${v[0]}</b><small>${v[1]}</small>`));
   sect('Text animation', 'text clips', 'tanim', FX_INFO.tanim, (k, v) => el('div', 'fxc', `<span class="fx-ic ta">Aa</span><b>${v[0]}</b><small>${v[1]}</small>`));
+  sect('Audio effects', 'clips with sound', 'afx', Object.fromEntries(Object.entries(AFX).map(([k, v]) => [k, [v.label, v.desc]])), (k, v) => el('div', 'fxc', `<span class="fx-ic au">${AFX[k].ic}</span><b>${v[0]}</b><small>${v[1]}</small>`));
+  if (typeof SFX_LIB !== 'undefined' && SFX_LIB.length) { const s = el('div', 'fx-sec', '<div class="sec-h">Sound effects <em>drag onto an audio track</em></div>'); const holder = el('div', 'sfx-tree'); s.appendChild(holder); box.appendChild(s); renderSfxTree(holder, q); }
 }
 $('#fxSearch').oninput = fillEffects;
 

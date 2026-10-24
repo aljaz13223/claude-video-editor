@@ -161,3 +161,57 @@ ACTIONS.push({ group: 'Claude', id: 'flow.open', label: 'Workflow (6 steps)', de
 ACT['flow.open'] = ACTIONS[ACTIONS.length - 1];
 // button in the Audio panel
 (() => { const gen = $('.musicgen'); if (!gen) return; const h = el('div', 'sec-h', 'Captions <em>from the transcript</em>'); const b = el('button', 'btn wide', '✦ Auto captions <kbd>Ctrl+Shift+C</kbd>'); b.onclick = makeCaptions; gen.after(h, b); })();
+
+// =====================================================================================
+// AUDIO EFFECTS + SOUND EFFECT FOLDERS
+// =====================================================================================
+const AFX = {
+  fadein: { label: 'Fade in', desc: '0.5 s audio fade in', ic: '◢', patch: c => ({ fadeIn: .5 }) },
+  fadeout: { label: 'Fade out', desc: '0.8 s audio fade out', ic: '◣', patch: c => ({ fadeOut: .8 }) },
+  fadeboth: { label: 'Fade in + out', desc: 'Soft start and end', ic: '◆', patch: c => ({ fadeIn: .3, fadeOut: .6 }) },
+  under: { label: 'Under the voice', desc: 'Music −20 dB for speech on top', ic: '▼', patch: c => ({ volume: -20 }) },
+  quieter: { label: '−6 dB', desc: 'Half as loud', ic: '−', patch: c => ({ volume: +((c.volume || 0) - 6).toFixed(1) }) },
+  louder: { label: '+3 dB', desc: 'A bit louder', ic: '+', patch: c => ({ volume: +((c.volume || 0) + 3).toFixed(1) }) },
+  left: { label: 'Pan left', desc: 'Move to the left speaker', ic: '◀', patch: c => ({ pan: -.6 }) },
+  right: { label: 'Pan right', desc: 'Move to the right speaker', ic: '▶', patch: c => ({ pan: .6 }) },
+  mute: { label: 'Mute', desc: 'Silence the clip', ic: '✕', patch: c => (c.type === 'video' ? { muteAudio: true } : { volume: -60 }) },
+  reset: { label: 'Reset audio', desc: 'Gain, pan and fades back to 0', ic: '↺', patch: c => ({ volume: 0, pan: 0, fadeIn: 0, fadeOut: 0, muteAudio: false }) },
+  enhance: { label: 'Enhance speech', desc: 'Remove noise and room, like Adobe Podcast', ic: '✦', run: cs => { sel = new Set([cs[0].id]); renderTimeline(); enhanceSel(); } },
+  captions: { label: 'Auto captions', desc: 'Captions from what is said', ic: 'Cc', run: cs => { sel = new Set(cs.map(c => c.id)); makeCaptions(); } },
+};
+const SFX_GROUPS = [['whoosh', 'Whooshes', 'transitions, fast moves'], ['riser', 'Risers', 'build-up before a drop or cut'], ['hit', 'Hits & impacts', 'logo, drop, big reveal'], ['impact', 'Hits & impacts', ''], ['click', 'Clicks', 'text, cursor, small pops'], ['ui', 'UI sounds', 'success, fail, buttons'], ['scifi', 'Sci-fi', 'tech, digital'], ['', 'Other', '']];
+const sfxGroupOf = n => { const k = n.toLowerCase(); if (k.includes('impact')) return 'Hits & impacts'; const g = SFX_GROUPS.find(([p]) => p && k.startsWith(p)); return g ? g[1] : 'Other'; };
+const prettySfx = n => n.replace(/^(whoosh|riser|hit|click|ui|scifi)_/i, '').replace(/_/g, ' ').replace(/\b(\d+)\b/, '#$1');
+const sfxOpen = new Set(['Whooshes']);
+let sfxDur = {};
+function renderSfxTree(holder, q = '') {
+  const groups = {};
+  for (const s of SFX_LIB) { if (q && !s.name.toLowerCase().includes(q)) continue; (groups[sfxGroupOf(s.name)] = groups[sfxGroupOf(s.name)] || []).push(s); }
+  holder.innerHTML = '';
+  const order = [...new Set(SFX_GROUPS.map(g => g[1]))];
+  for (const g of order) {
+    const list = groups[g]; if (!list) continue;
+    const info = SFX_GROUPS.find(x => x[1] === g);
+    const d = el('details', 'sfx-dir'); d.open = sfxOpen.has(g) || !!q;
+    d.innerHTML = `<summary><span class="dirth"></span><b>${esc(g)}</b><small>${list.length}</small><em>${esc(info ? info[2] : '')}</em></summary>`;
+    d.ontoggle = () => { d.open ? sfxOpen.add(g) : sfxOpen.delete(g); };
+    for (const s of list) {
+      const r = el('div', 'sfx-i', `<button title="Preview">▶</button><span>${esc(prettySfx(s.name))}</span><small>${sfxDur[s.path] ? sfxDur[s.path].toFixed(1) + 's' : ''}</small>`);
+      r.title = s.name + ' — drag onto an audio track, double-click to place at the playhead (A2)';
+      r.draggable = true; r.ondragstart = e => e.dataTransfer.setData('tf/sfx', JSON.stringify(s));
+      r.querySelector('button').onclick = e => { e.stopPropagation(); const a = new Audio(s.url); a.onloadedmetadata = () => { sfxDur[s.path] = a.duration; }; a.play(); };
+      r.ondblclick = () => addSfx(s, freeTrack('audio', T, 1, 'A2'), T);
+      d.appendChild(r);
+    }
+    holder.appendChild(d);
+  }
+  if (!holder.children.length) holder.innerHTML = '<div class="muted">No sound effects found.</div>';
+}
+function renderSfxFolders() {
+  const L = $('#sfxList'); if (!L) return;
+  if (!SFX_LIB.length) { L.innerHTML = '<div class="muted">SFX library not found (00-SISTEM/assets/sfx-library).</div>'; return; }
+  L.innerHTML = '<input id="sfxSearch" class="fx-search" placeholder="Search sound effects"><div class="sfx-tree" id="sfxTree"></div>';
+  renderSfxTree($('#sfxTree'));
+  $('#sfxSearch').oninput = e => renderSfxTree($('#sfxTree'), e.target.value.toLowerCase());
+  if (typeof fillEffects === 'function' && $('#fxPanel')) fillEffects();
+}
