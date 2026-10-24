@@ -171,6 +171,10 @@ ipcMain.handle('file-info', async (_, f) => { const m = await probe(f); if (!m) 
 const KEYMAP = path.join(HOME_DIR, 'keymap.json');
 ipcMain.handle('keymap-get', () => { try { return JSON.parse(fs.readFileSync(KEYMAP, 'utf8')); } catch { return {}; } });
 ipcMain.handle('keymap-set', (_, km) => { fs.writeFileSync(KEYMAP, JSON.stringify(km, null, 1)); return true; });
+// style library (00-SISTEM/stili/*.style.json)
+const STYLE_DIR = path.join(ROOT, '00-SISTEM', 'stili');
+ipcMain.handle('style-list', () => { try { return fs.readdirSync(STYLE_DIR).filter(f => f.endsWith('.style.json')).map(f => JSON.parse(fs.readFileSync(path.join(STYLE_DIR, f), 'utf8'))); } catch { return []; } });
+ipcMain.handle('style-save', (_, st) => { fs.mkdirSync(STYLE_DIR, { recursive: true }); const f = path.join(STYLE_DIR, safe(st.name) + '.style.json'); fs.writeFileSync(f, JSON.stringify(st, null, 1)); return f; });
 ipcMain.handle('reveal', (_, f) => shell.showItemInFolder(f));
 ipcMain.handle('open-path', (_, f) => shell.openPath(f));
 ipcMain.handle('file-url', (_, f) => pathToFileURL(f).href);
@@ -365,7 +369,11 @@ ${rules.slice(0, 20000)}
 ${brand ? '\n=== CLIENT BRAND (' + p.client + '/BRAND.md) ===\n' + brand.slice(0, 12000) : ''}
 ${styles ? '\n=== STYLE LIBRARY ===\n' + styles.slice(0, 5000) : ''}
 === MUSIC ALREADY USED (GLASBA-DNEVNIK.md) ===
-${music.slice(0, 4000)}`;
+${music.slice(0, 4000)}
+${p.style ? '\n=== PROJECT STYLE (' + (p.workflow && p.workflow.style === 'approved' ? 'APPROVED — follow it exactly' : 'draft') + ') ===\n' + JSON.stringify(p.style, null, 1) : ''}
+${p.script ? '\n=== SCRIPT ===\n' + String(p.script).slice(0, 8000) : ''}
+${p.storyboard && p.storyboard.length ? '\n=== STORYBOARD (' + (p.workflow && p.workflow.board === 'approved' ? 'APPROVED' : 'draft') + ') ===\n' + p.storyboard.map((r, i) => `${i + 1}. [${r.t || ''}] "${r.line || ''}" → screen: ${r.screen || ''} | motion: ${r.motion || ''} | sound: ${r.sound || ''}`).join('\n') : ''}
+Workflow (6 checkpoints, from the motion-workflow skill): sources → style training (describe the style only, call set_style) → style test (3 still frames, clips tagged tag:"test") → animation test (animate the first test frame, tag:"test") → storyboard (set_storyboard) → final edit (delete all tag:"test" clips first). Never jump ahead of the step the human asked for. Videos longer than 1–2 min: work in chunks.`;
 }
 
 const TOOLS = [
@@ -376,6 +384,8 @@ const TOOLS = [
   { name: 'look_at', description: 'Render real frames of the timeline at the given times (max 8) and look at them.', input_schema: { type: 'object', properties: { times: { type: 'array', items: { type: 'number' } } }, required: ['times'] } },
   { name: 'generate_music', description: 'Generate a brand new royalty-free music track (adds it to the bin, returns media id, bpm, bar and drop times). style: auto (unused style) or one of uk-garage, drum-and-bass, funk-disco, afrobeat, piano-house, trap, chiptune, bossa-nova, phonk, jazz-hop, indie-rock.', input_schema: { type: 'object', properties: { duration: { type: 'number' }, style: { type: 'string' }, bpm: { type: 'number' } }, required: ['duration'] } },
   { name: 'list_sfx', description: 'Sound effects library (name, duration, peak offset in seconds: place clip start = cut time - peak).', input_schema: { type: 'object', properties: {} } },
+  { name: 'set_style', description: 'Save the visual style learned from reference images (step 2). Describe only — do not edit the timeline.', input_schema: { type: 'object', properties: { name: { type: 'string' }, summary: { type: 'string' }, palette: { type: 'array', items: { type: 'string' }, description: 'hex colours' }, fonts: { type: 'array', items: { type: 'string' }, description: 'from the Takeframe font list' }, elements: { type: 'string' }, textures: { type: 'string' }, motion: { type: 'string' }, avoid: { type: 'string' } }, required: ['name', 'summary', 'palette'] } },
+  { name: 'set_storyboard', description: 'Write the storyboard (step 5): one row per script line or beat. Use critique for feedback on a storyboard the human wrote.', input_schema: { type: 'object', properties: { rows: { type: 'array', items: { type: 'object', properties: { t: { type: 'string', description: 'time, e.g. 0:03' }, line: { type: 'string' }, screen: { type: 'string' }, motion: { type: 'string' }, sound: { type: 'string' } } } }, critique: { type: 'string' } }, required: ['rows'] } },
   { name: 'add_files', description: 'Import files (absolute paths) into the bin, e.g. an SFX from list_sfx. Returns media ids.', input_schema: { type: 'object', properties: { paths: { type: 'array', items: { type: 'string' } } }, required: ['paths'] } },
   { name: 'enhance_speech', description: 'Local Adobe-Podcast-style speech enhancement for a media file (noise, room, EQ, loudness). Clips using it switch to the enhanced audio.', input_schema: { type: 'object', properties: { media_id: { type: 'string' }, strength: { type: 'number' } }, required: ['media_id'] } },
   { name: 'transcribe', description: 'Transcribe a video/audio media file locally (word timestamps). Needed for cutting on words or captions.', input_schema: { type: 'object', properties: { media_id: { type: 'string' } }, required: ['media_id'] } },
@@ -467,6 +477,7 @@ async function runTool(name, input, scope, emit, getP, setP) {
     return txt({ media_id: added.id, style: m.music.style_name, bpm: m.music.bpm, key: m.music.key, bar: +m.music.bar.toFixed(4), bars: m.music.bars, drops: m.music.drops, breaks: m.music.breaks, duration: m.duration });
   }
   if (name === 'list_sfx') return txt(await sfxInfo());
+  if (name === 'set_style' || name === 'set_storyboard') { const r = await askRenderer(name, input); if (r.project) setP(r.project); return txt(r.error ? 'ERROR: ' + r.error : 'saved — wait for the human to approve before the next step'); }
   if (name === 'add_files') {
     const ms = []; for (const f of input.paths || []) { const m = await probe(f); if (m) { m.thumb = await thumb(m, path.join(HOME_DIR, 'cache')); m.url = pathToFileURL(f).href; m.thumbUrl = pathToFileURL(m.thumb).href; ms.push(m); } }
     const r = await askRenderer('add_media', { media: ms }); setP(r.project);

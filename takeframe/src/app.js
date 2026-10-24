@@ -620,6 +620,8 @@ host.on('ai-tool', (id, name, input) => {
       aiTouched = new Set([...now.filter(id => !before.has(id)), ...ops.map(o => o.id).filter(Boolean)]);
       renderTimeline(); reply = { lines, project: P };
     }
+    else if (typeof aiToolExt !== 'undefined' && aiToolExt[name]) reply = aiToolExt[name](input);
+    else reply = { error: 'unknown tool ' + name, project: P };
   } catch (e) { reply = { error: e.message, project: P }; }
   host.send('ai-tool-result', id, JSON.parse(JSON.stringify(reply)));
 });

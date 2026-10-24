@@ -128,7 +128,7 @@
     </section>
 
     <aside class="panel right">
-      <div class="tabs" id="rightTabs"><button data-t="insp" class="on">Inspector</button><button data-t="claude">Claude</button><button data-t="hist">History</button></div>
+      <div class="tabs" id="rightTabs"><button data-t="insp" class="on">Inspector</button><button data-t="claude">Claude</button><button data-t="flow">Workflow</button><button data-t="hist">History</button></div>
       <div class="pbody" data-p="insp"><div id="insp" class="insp"></div></div>
       <div class="pbody hidden chat" data-p="claude">
         <div class="chat-log" id="chatLog"></div>
@@ -138,6 +138,7 @@
           <div class="chat-btns"><span class="muted" id="aiCost"></span><button class="btn" id="chatStop" disabled>Stop</button><button class="btn primary" id="chatSend">Send</button></div>
         </div>
       </div>
+      <div class="pbody hidden" data-p="flow"><div id="flow" class="flow"></div></div>
       <div class="pbody hidden" data-p="hist"><div id="hist" class="hist"></div></div>
     </aside>
   </main>
@@ -213,4 +214,5 @@
 <script src="engine.js"></script>
 <script src="app.js"></script>
 <script src="ui2.js"></script>
+<script src="ui3.js"></script>
 </body></html>
