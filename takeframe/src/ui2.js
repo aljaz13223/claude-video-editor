@@ -370,6 +370,7 @@ function applyTo(kind, name, ids) {
 function fillEffects() {
   const q = ($('#fxSearch').value || '').toLowerCase(); const box = $('#fxPanel'); box.innerHTML = '';
   const sect = (title, hint, kind, entries, card) => {
+    if (typeof wsAllowsFx === 'function' && !wsAllowsFx(kind)) return;
     const list = Object.entries(entries).filter(([k, v]) => !q || (k + v[0] + v[1]).toLowerCase().includes(q)); if (!list.length) return;
     const s = el('div', 'fx-sec', `<div class="sec-h">${title} <em>${hint}</em></div>`); const g = el('div', 'fx-grid');
     for (const [k, v] of list) { const c = card(k, v); c.draggable = true; c.ondragstart = e => e.dataTransfer.setData('tf/' + kind, k); c.onclick = () => applyTo(kind, k); c.title = v[1] + ' — click to apply to selected clips, or drag onto a clip'; g.appendChild(c); }
@@ -380,7 +381,7 @@ function fillEffects() {
   sect('Picture motion', 'video & photos', 'motion', FX_INFO.motion, (k, v) => el('div', 'fxc', `<span class="fx-ic mo"><i></i></span><b>${v[0]}</b><small>${v[1]}</small>`));
   sect('Text animation', 'text clips', 'tanim', FX_INFO.tanim, (k, v) => el('div', 'fxc', `<span class="fx-ic ta">Aa</span><b>${v[0]}</b><small>${v[1]}</small>`));
   sect('Audio effects', 'clips with sound', 'afx', Object.fromEntries(Object.entries(AFX).map(([k, v]) => [k, [v.label, v.desc]])), (k, v) => el('div', 'fxc', `<span class="fx-ic au">${AFX[k].ic}</span><b>${v[0]}</b><small>${v[1]}</small>`));
-  if (typeof SFX_LIB !== 'undefined' && SFX_LIB.length) { const s = el('div', 'fx-sec', '<div class="sec-h">Sound effects <em>drag onto an audio track</em></div>'); const holder = el('div', 'sfx-tree'); s.appendChild(holder); box.appendChild(s); renderSfxTree(holder, q); }
+  if (typeof SFX_LIB !== 'undefined' && SFX_LIB.length && (typeof wsAllowsFx !== 'function' || wsAllowsFx('sfx'))) { const s = el('div', 'fx-sec', '<div class="sec-h">Sound effects <em>drag onto an audio track</em></div>'); const holder = el('div', 'sfx-tree'); s.appendChild(holder); box.appendChild(s); renderSfxTree(holder, q); }
 }
 $('#fxSearch').oninput = fillEffects;
 

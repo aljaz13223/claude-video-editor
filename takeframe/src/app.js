@@ -115,6 +115,7 @@ function enterEditor(p) {
   $('#pName').value = P.name; updateMeta();
   renderAll(); fitStage(); save();
   if (P.sourceFolder) { switchTab('left', 'folder'); openFolderPanel(P.sourceFolder); } else { switchTab('left', P.media.length ? 'media' : 'folder'); renderFolder(); }
+  if (typeof setWorkspace === 'function') setWorkspace(curWs);
   $('#chatLog').innerHTML = ''; chatMsg('ai', `Project “${P.name}” — ${P.format}, ${P.duration}s. Tell me what to make, or select a clip on the timeline and ask me to change only that part.`);
 }
 function updateMeta() { const d = TF.projectDuration(P); $('#pMeta').textContent = `${P.w}×${P.h} · ${P.format} · ${P.fps} fps · ${fmtS(d)}${P.autoDuration ? ' (auto)' : ''}${P.client ? ' · ' + P.client : ''}`; $('#tcDur').textContent = fmt(d, P.fps); }
@@ -221,7 +222,7 @@ function renderTimeline() {
   const heads = $('#heads'), lanes = $('#lanes'); heads.innerHTML = ''; lanes.innerHTML = '';
   const W = tlWidth(); lanes.style.width = W + 'px';
   const bars = musicBars();
-  for (const tr of P.tracks) {
+  for (const tr of visibleTracks()) {
     const st = P.trackState[tr.id] || {}; const h = trackH(tr.id);
     const hd = el('div', 'head'); hd.style.height = h + 'px';
     hd.innerHTML = `<b>${tr.id}</b><span>${esc(tr.name)}</span>` + (tr.kind === 'video' ? `<button class="${st.hidden ? 'on' : ''}" data-k="hidden" title="Hide">H</button>` : `<button class="mute ${st.mute ? 'on' : ''}" data-k="mute" title="Mute">M</button><button class="${st.solo ? 'on' : ''}" data-k="solo" title="Solo">S</button>`) + `<button class="${st.lock ? 'on' : ''}" data-k="lock" title="Lock">L</button>`;
@@ -463,7 +464,8 @@ function renderInspector(soft) {
   if (m) h += `<div class="report">${esc(m.path)}</div>`;
   box.innerHTML = h; bindInspector(c, m);
 }
-const sec = (t, b, open) => `<details class="isec" ${open ? 'open' : ''}><summary>${t}</summary><div class="ib">${b}</div></details>`;
+const SEC_KEY = t => /^Clip/.test(t) ? 'clip' : /^Transform/.test(t) ? 'transform' : /^Text/.test(t) ? 'text' : /^Animation/.test(t) ? 'anim' : /^Picture/.test(t) ? 'picture' : /^Fill/.test(t) ? 'fill' : /^Color/.test(t) ? 'color' : /^Transition/.test(t) ? 'trans' : /^Audio/.test(t) ? 'audio' : /^Project/.test(t) ? 'project' : 'other';
+const sec = (t, b, open) => `<details class="isec" data-sec="${SEC_KEY(t)}" ${open ? 'open' : ''}><summary>${t}</summary><div class="ib">${b}</div></details>`;
 const row = (l, ctl, extra = '') => `<div class="prow ${extra ? '' : 'full'}"><label>${l}</label>${ctl}${extra}</div>`;
 const num = (f, v, st) => `<input type="number" data-f="${f}" step="${st}" value="${(+v).toFixed(3).replace(/\.?0+$/, '')}" class="scrub">`;
 const snum = (f, v, st) => `<input type="number" data-s="${f}" step="${st}" value="${v}">`;
@@ -678,11 +680,7 @@ host.on('export-progress', m => { $('#expBar').style.width = Math.round((m.pct |
 function switchTab(side, t) { const root = side === 'left' ? '.panel.left' : '.panel.right'; $$(root + ' .tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); $$(root + ' .pbody').forEach(p => p.classList.toggle('hidden', p.dataset.p !== t)); }
 $$('#leftTabs button').forEach(b => b.onclick = () => switchTab('left', b.dataset.t));
 $$('#rightTabs button').forEach(b => b.onclick = () => switchTab('right', b.dataset.t));
-$$('#ws button').forEach(b => b.onclick = () => {
-  $$('#ws button').forEach(x => x.classList.toggle('on', x === b)); document.body.className = 'ws-' + b.dataset.ws;
-  if (b.dataset.ws === 'sound') switchTab('left', 'audio'); if (b.dataset.ws === 'motion') switchTab('left', 'text'); if (b.dataset.ws === 'color') switchTab('left', 'fx'); if (b.dataset.ws === 'edit') switchTab('left', 'media');
-  switchTab('right', 'insp'); renderTimeline(); renderInspector(); setTimeout(fitStage, 0);
-});
+$$('#ws button').forEach(b => b.onclick = () => setWorkspace(b.dataset.ws));
 function setTool(t) { tool = t; $$('#tools button').forEach(b => b.classList.toggle('on', b.dataset.tool === t)); $('#lanes').style.cursor = t === 'razor' ? 'crosshair' : t === 'text' ? 'text' : ''; }
 $$('#tools button').forEach(b => b.onclick = () => setTool(b.dataset.tool));
 $('#tSafe').onclick = e => { e.target.classList.toggle('on'); $('#safe').classList.toggle('on'); };
