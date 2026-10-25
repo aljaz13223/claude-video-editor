@@ -186,8 +186,10 @@ function syncAudio() {
   }
   for (const [id, a] of audioEls) if (!live.has(id) && !a.paused) a.pause();
 }
-function seek(t) { T = Math.max(0, Math.min(t, rangeEnd() + 30)); if (playing) { t0 = performance.now(); T0 = T; syncAudio(); } drawFrame(); renderInspector(true); }
-function follow() { const lw = $('#lanesWrap'); const x = T * pps; if (x > lw.scrollLeft + lw.clientWidth - 40) lw.scrollLeft = x - 80; }
+function seek(t) { T = Math.max(0, Math.min(t, rangeEnd() + 30)); if (playing) { t0 = performance.now(); T0 = T; syncAudio(); } drawFrame(); ensureVisible(); renderInspector(true); }
+function follow() { const lw = $('#lanesWrap'); const x = T * pps; if (x > lw.scrollLeft + lw.clientWidth - 40) lw.scrollLeft = x - 80; else if (x < lw.scrollLeft + 10) lw.scrollLeft = Math.max(0, x - 80); }
+// keep the playhead on screen when it jumps (arrows, Home/End, markers…)
+function ensureVisible() { const lw = $('#lanesWrap'); if (!lw || (typeof edgeDrag !== 'undefined' && edgeDrag)) return; const x = T * pps; if (x < lw.scrollLeft || x > lw.scrollLeft + lw.clientWidth - 20) lw.scrollLeft = Math.max(0, x - lw.clientWidth * .3); }
 
 // ---------------- bin ----------------
 function renderBin() {
@@ -293,7 +295,7 @@ function renderRuler() {
   if (P.inPoint != null || P.outPoint != null) { const a = P.inPoint ?? 0, b = P.outPoint ?? rangeEnd(); const io = el('div', 'io'); io.style.left = a * pps + 'px'; io.style.width = (b - a) * pps + 'px'; r.appendChild(io); }
   for (const m of P.markers) { const k = el('div', 'mk'); k.style.left = m.t * pps + 'px'; k.style.background = m.color; k.title = m.name; k.onclick = e => { e.stopPropagation(); seek(m.t); }; k.ondblclick = e => { e.stopPropagation(); apply({ op: 'delete_marker', id: m.id }, 'Delete marker'); }; r.appendChild(k); }
   for (const n of P.notes || []) if (n.t != null) { const k = el('div', 'note-pin'); k.style.left = n.t * pps + 'px'; k.title = n.text; r.appendChild(k); }
-  r.onpointerdown = e => { const rect = r.getBoundingClientRect(); const go = ev => seek(snapT((ev.clientX - rect.left) / pps, null, true)); go(e); const mv = ev => go(ev); const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); }; addEventListener('pointermove', mv); addEventListener('pointerup', up); };
+  r.onpointerdown = e => { const go = ev => seek(snapT(Math.max(0, (ev.clientX - $('#lanes').getBoundingClientRect().left) / pps), null, true)); go(e); const mv = ev => go(ev); const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); }; addEventListener('pointermove', mv); addEventListener('pointerup', up); };
 }
 function placePlayhead() { const ph = $('#playhead'); if (ph) ph.style.left = T * pps + 'px'; }
 
@@ -318,7 +320,7 @@ function locked(trackId) { return (P.trackState[trackId] || {}).lock; }
 function clipDown(e, c, d) {
   if (e.button !== 0) return; e.stopPropagation();
   if (locked(c.track)) { toast(c.track + ' is locked'); return; }
-  const rect = $('#lanes').getBoundingClientRect(); const tAt = ev => (ev.clientX - rect.left) / pps;
+  const tAt = ev => (ev.clientX - $('#lanes').getBoundingClientRect().left) / pps; // fresh rect: the timeline may auto-scroll while dragging
   if (tool === 'razor') { const t = snapT(tAt(e)); apply({ op: 'split_clip', id: c.id, t }, 'Razor'); showSnap(null); return; }
   if (tool === 'text') return;
   if (e.shiftKey || e.ctrlKey || e.metaKey) { sel.has(c.id) ? sel.delete(c.id) : sel.add(c.id); }

@@ -75,3 +75,29 @@ function applyEdition(ed, persist) {
 }
 $$('.edition button').forEach(b => b.onclick = e => { e.stopPropagation(); applyEdition(b.dataset.ed, true); });
 host.invoke('env').then(e => applyEdition(e.edition)).catch(() => applyEdition('lite'));
+
+// =====================================================================================
+// EDGE AUTO-SCROLL: drag the playhead, a clip or a trim handle to the left/right edge
+// and the timeline scrolls with you (faster the closer you get to the edge).
+// =====================================================================================
+let edgeDrag = false, edgeEv = null, edgeRaf = 0;
+const EDGE = 60;
+$('#lanesWrap').addEventListener('pointerdown', e => { if (e.button !== 0) return; edgeDrag = true; edgeEv = e; }, true);
+addEventListener('pointermove', e => { if (!edgeDrag || !e.isTrusted) return; edgeEv = e; if (!edgeRaf) edgeRaf = requestAnimationFrame(edgeTick); });
+addEventListener('pointerup', () => { edgeDrag = false; cancelAnimationFrame(edgeRaf); edgeRaf = 0; });
+addEventListener('blur', () => { edgeDrag = false; });
+function edgeTick() {
+  edgeRaf = 0; if (!edgeDrag || !edgeEv) return;
+  const lw = $('#lanesWrap'); const r = lw.getBoundingClientRect(); const x = edgeEv.clientX;
+  let v = 0;
+  if (x < r.left + EDGE) v = -Math.ceil(((r.left + EDGE - x) / EDGE) ** 2 * 28);
+  else if (x > r.right - EDGE) v = Math.ceil(((x - (r.right - EDGE)) / EDGE) ** 2 * 28);
+  if (!v) return;
+  const before = lw.scrollLeft; lw.scrollLeft = Math.max(0, before + v);
+  if (lw.scrollLeft !== before) {
+    // replay the last pointer position so the scrub / drag follows the scrolled timeline
+    dispatchEvent(new PointerEvent('pointermove', { clientX: edgeEv.clientX, clientY: edgeEv.clientY, bubbles: true, pointerId: edgeEv.pointerId, buttons: 1 }));
+    if (v > 0 && lw.scrollLeft + lw.clientWidth >= lw.scrollWidth - 2) { /* reached the end: grow the timeline */ pps = pps; renderTimeline(); }
+  }
+  edgeRaf = requestAnimationFrame(edgeTick);
+}
