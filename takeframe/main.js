@@ -116,13 +116,18 @@ function finalDir(p) {
 }
 
 // ---------------- IPC: environment, files, projects ----------------
+const SETTINGS = path.join(HOME_DIR, 'settings.json');
+const readSettings = () => { try { return JSON.parse(fs.readFileSync(SETTINGS, 'utf8')); } catch { return {}; } };
+ipcMain.handle('settings-set', (_, patch) => { const st = Object.assign(readSettings(), patch); fs.writeFileSync(SETTINGS, JSON.stringify(st, null, 1)); return st; });
+// edition: --premium / --lite on the command line wins, otherwise the last choice in settings.json
+const EDITION = process.argv.includes('--premium') ? 'premium' : process.argv.includes('--lite') ? 'lite' : null;
 ipcMain.handle('env', async () => {
   const has = k => !!process.env[k];
   let ff = false; try { execFileSync('ffmpeg', ['-version'], { windowsHide: true }); ff = true; } catch {}
   let gpu = ''; try { gpu = execFileSync('nvidia-smi', ['--query-gpu=name', '--format=csv,noheader'], { windowsHide: true }).toString().trim(); } catch {}
   const clients = fs.existsSync(ROOT) ? fs.readdirSync(ROOT, { withFileTypes: true }).filter(d => d.isDirectory() && fs.existsSync(path.join(ROOT, d.name, 'BRAND.md'))).map(d => d.name) : [];
   let recent = []; try { recent = JSON.parse(fs.readFileSync(RECENT, 'utf8')).filter(r => fs.existsSync(r.file)); } catch {}
-  return { root: ROOT, apiKey: has('ANTHROPIC_API_KEY'), model: MODEL, python: fs.existsSync(PY), ffmpeg: ff, gpu, clients, recent, sfx: fs.existsSync(SFX_DIR) };
+  return { edition: EDITION || readSettings().edition || 'lite', root: ROOT, apiKey: has('ANTHROPIC_API_KEY'), model: MODEL, python: fs.existsSync(PY), ffmpeg: ff, gpu, clients, recent, sfx: fs.existsSync(SFX_DIR) };
 });
 ipcMain.handle('pick-files', async () => (await dialog.showOpenDialog(win, { properties: ['openFile', 'multiSelections'], filters: [{ name: 'Media', extensions: ['mp4', 'mov', 'mkv', 'webm', 'png', 'jpg', 'jpeg', 'webp', 'wav', 'mp3', 'm4a', 'flac'] }] })).filePaths);
 ipcMain.handle('pick-folder', async (_, def) => (await dialog.showOpenDialog(win, { defaultPath: def || ROOT, properties: ['openDirectory'] })).filePaths[0] || null);

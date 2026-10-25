@@ -61,3 +61,17 @@ renderInspector = function (soft) {
 `; document.head.appendChild(s); })();
 // start in Edit (remember last workspace per machine)
 setTimeout(() => { let ws = 'edit'; try { ws = localStorage.getItem('tf.ws') || 'edit'; } catch {} setWorkspace(ws); }, 0);
+
+// =====================================================================================
+// EDITION: Lite (flat, light on the GPU) / Premium (richer design)
+// =====================================================================================
+function applyEdition(ed, persist) {
+  ed = ed === 'premium' ? 'premium' : 'lite';
+  document.documentElement.classList.toggle('premium', ed === 'premium');
+  document.documentElement.classList.toggle('lite', ed === 'lite');
+  $$('.edition button').forEach(b => b.classList.toggle('on', b.dataset.ed === ed));
+  if (persist) host.invoke('settings-set', { edition: ed });
+  setTimeout(() => { if (typeof fitStage === 'function') fitStage(); }, 50);
+}
+$$('.edition button').forEach(b => b.onclick = e => { e.stopPropagation(); applyEdition(b.dataset.ed, true); });
+host.invoke('env').then(e => applyEdition(e.edition)).catch(() => applyEdition('lite'));

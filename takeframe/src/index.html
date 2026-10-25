@@ -3,13 +3,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="../fonts/fonts.css">
 <link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="premium.css">
 </head>
 <body class="ws-edit">
 
 <!-- ======================= START ======================= -->
 <div id="start" class="screen">
   <div class="st-top">
-    <div class="brand"><span class="mark"><i></i><i></i></span>Takeframe</div>
+    <div class="brand"><span class="mark"><i></i><i></i></span>Takeframe<span class="edition" title="Lite: simple look for any graphics card · Premium: richer design (needs a better GPU)"><button data-ed="lite">Lite</button><button data-ed="premium">Premium</button></span></div>
     <div class="env" id="env"></div>
   </div>
   <div class="st-body">
@@ -71,6 +72,7 @@
     </nav>
     <button class="cmdbar" id="cmdBar" data-run="app.palette"><i class="ti ti-cmd"></i><span>Search commands…</span><kbd data-act="app.palette"></kbd></button>
     <div class="top-r">
+      <span class="edition" title="Lite / Premium design"><button data-ed="lite">Lite</button><button data-ed="premium">Premium</button></span>
       <span class="saved" id="saved">Saved</span>
       <button class="btn" id="btnUndo" title="Undo (Ctrl+Z)">↶</button><button class="btn" id="btnRedo" title="Redo (Ctrl+Shift+Z)">↷</button>
       <button class="btn primary" id="btnExport">Export</button>

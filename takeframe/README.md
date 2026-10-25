@@ -6,7 +6,10 @@ Desktop video editor where Claude makes the edit with our skills and you fine-tu
 
 1. `INSTALL.bat` — once. Installs Electron, the local audio engine (Python venv in `%USERPROFILE%\.takeframe`: PyTorch CUDA, Demucs, faster-whisper) and DeepFilterNet3.
 2. `SET-API-KEY.bat` — once. Stores `ANTHROPIC_API_KEY` as a Windows user variable (never in code or chat). Swap the key any time by running it again.
-3. `START-TAKEFRAME.bat`.
+3. `START-TAKEFRAME.bat` (opens the edition you used last), or pick one:
+   - `START-TAKEFRAME-LITE.bat` — flat design without blur or animation, runs on any graphics card.
+   - `START-TAKEFRAME-PREMIUM.bat` — richer “projection room” design (glass panels, lit monitor), for a decent GPU.
+   You can also switch with the Lite / Premium toggle in the top bar; the choice is remembered.
 
 Model: `claude-opus-5-5` by default; set `TAKEFRAME_MODEL` to change it.
 

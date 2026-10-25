@@ -526,3 +526,6 @@ dialog.keys{width:min(900px,94vw);max-height:86vh;padding:18px 20px;overflow:aut
 .cap-s.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
 .cap-pos{margin-bottom:6px}.cap-pos button{flex:1}
 .cap-hint{font-size:10px;line-height:1.4;margin:5px 0 0}
+/* Lite: no motion, no blur — easy on weak graphics cards */
+html.lite *{transition:none!important;animation:none!important}
+html.lite .stage-wrap{box-shadow:0 0 0 1px #000}
