@@ -40,7 +40,7 @@ html.premium.skin-arc .arc-orb .wv i{width:3px;height:44px;border-radius:2px;bac
 html.premium.skin-arc .arc-orb .wv.l i:nth-child(-n+6),html.premium.skin-arc .arc-orb .wv.r i:nth-last-child(-n+6){opacity:.35}
 
 /* asset card bottom-left */
-html.premium.skin-arc .arc-card{display:flex;align-items:center;gap:8px;position:absolute;left:calc(50% - 330px);bottom:14px;z-index:3;padding:5px;border-radius:12px;background:rgba(12,22,44,.85);border:1px solid rgba(120,160,255,.18);backdrop-filter:blur(8px)}
+html.premium.skin-arc .arc-card{display:flex;align-items:center;gap:8px;position:absolute;left:calc(50% - 300px);bottom:14px;z-index:3;padding:5px;border-radius:12px;background:rgba(12,22,44,.85);border:1px solid rgba(120,160,255,.18);backdrop-filter:blur(8px)}
 html.premium.skin-arc .ac-th{width:92px;height:52px;border-radius:8px;background:#14203a center/cover;position:relative}
 html.premium.skin-arc .ac-th b{position:absolute;left:4px;bottom:3px;font:600 9.5px var(--mono);background:rgba(0,0,0,.55);padding:0 4px;border-radius:3px}
 html.premium.skin-arc #arcAdd{width:34px;height:34px;border-radius:9px;border:1px solid rgba(120,160,255,.3);background:rgba(61,139,255,.12);color:#cfe1ff;font-size:18px;cursor:pointer}
@@ -50,3 +50,6 @@ html.premium.skin-arc .askbar .mic{display:none}
 html.premium.skin-arc .lanes-wrap{scrollbar-width:none}
 html.premium.skin-arc .lanes-wrap::-webkit-scrollbar{display:none}
 html.premium.skin-arc .playhead{bottom:auto;height:100%;min-height:100%}
+html.premium.skin-arc .tl-body.arc-on{opacity:0}
+html.premium.skin-arc .tl-body.arc-on .ask{display:none!important}
+#arcCv{display:none;position:absolute;z-index:2;pointer-events:none}
