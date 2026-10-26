@@ -1,9 +1,9 @@
 /* =====================================================================================
    Premium skin: STUDIO ARC — Studio + the curved timeline (html.premium.skin-studio.skin-arc)
    ===================================================================================== */
-html.premium.skin-arc #editor{grid-template-rows:46px minmax(0,1fr) var(--tlh,48vh) 58px}
+html.premium.skin-arc #editor{grid-template-rows:46px minmax(0,1fr) var(--tlh,52vh) 58px}
 html.premium.skin-arc .timeline{background:radial-gradient(60% 90% at 50% 100%,rgba(61,139,255,.12),transparent 70%),linear-gradient(180deg,rgba(10,16,32,.9),rgba(5,9,18,.95))!important;padding-bottom:84px}
-html.premium.skin-arc .tl-body{margin:0 70px;position:relative;z-index:2}
+html.premium.skin-arc .tl-body{margin:0 86px;position:relative;z-index:2}
 html.premium.skin-arc .heads{background:transparent}
 html.premium.skin-arc .head{border-left:0;border-bottom:0}
 html.premium.skin-arc .head span{background:rgba(12,22,44,.85);border:1px solid rgba(120,160,255,.18);border-radius:10px;padding:4px 8px 4px 4px;margin:6px 0;box-shadow:0 6px 18px -8px rgba(0,0,0,.7)}
@@ -18,14 +18,11 @@ html.premium.skin-arc .playhead i{width:auto;height:auto;left:50%;top:-1px;trans
 html.premium.skin-arc .playhead i::after{content:attr(data-tc);font:600 10.5px var(--mono);color:#e6f0ff;white-space:nowrap}
 html.premium.skin-arc .playhead::after{content:'';position:absolute;left:-4px;top:22px;width:9px;height:9px;border-radius:50%;background:#9cc8ff;box-shadow:0 0 10px #3d8bff}
 
-/* film strips at both sides */
+/* film frames that continue around the ring past both ends (placed by ui6.js) */
 .arc-strip,.arc-slider,.arc-orb,.arc-card{display:none}
-html.premium.skin-arc .arc-strip{display:flex;flex-direction:column;gap:6px;position:absolute;top:58px;bottom:76px;width:62px;padding:6px 7px;border-radius:12px;background:linear-gradient(#0b1428,#070d1c);border:1px solid rgba(120,160,255,.14);z-index:1;pointer-events:none;overflow:hidden;box-shadow:inset 0 0 0 3px rgba(0,0,0,.25)}
-html.premium.skin-arc .arc-strip.l{left:4px;transform:perspective(500px) rotateY(28deg);transform-origin:left center}
-html.premium.skin-arc .arc-strip.r{right:4px;transform:perspective(500px) rotateY(-28deg);transform-origin:right center}
-html.premium.skin-arc .arc-strip span{flex:1;min-height:20px;border-radius:4px;background:#14203a center/cover;opacity:.75;border:1px solid rgba(255,255,255,.08)}
-html.premium.skin-arc .arc-strip::before,html.premium.skin-arc .arc-strip::after{content:'';position:absolute;top:0;bottom:0;width:4px;background:repeating-linear-gradient(#0b1428 0 5px,rgba(160,190,255,.25) 5px 9px)}
-html.premium.skin-arc .arc-strip::before{left:1px} html.premium.skin-arc .arc-strip::after{right:1px}
+html.premium.skin-arc .timeline{overflow:hidden}
+html.premium.skin-arc .arc-strip{display:block;position:absolute;inset:0;z-index:1;pointer-events:none}
+html.premium.skin-arc .arc-strip span{position:absolute;width:66px;height:42px;border-radius:5px;background:#14203a center/cover;border:1px solid rgba(160,190,255,.22);box-shadow:0 0 0 3px #0a1226,0 0 0 4px rgba(120,160,255,.18),0 8px 20px -6px rgba(0,0,0,.8)}
 
 /* vertical sliders: curve (left) and zoom (right) */
 html.premium.skin-arc .arc-slider{display:flex;flex-direction:column;align-items:center;gap:4px;position:absolute;bottom:10px;z-index:3;color:var(--mut);font-size:12px}
@@ -43,10 +40,13 @@ html.premium.skin-arc .arc-orb .wv i{width:3px;height:44px;border-radius:2px;bac
 html.premium.skin-arc .arc-orb .wv.l i:nth-child(-n+6),html.premium.skin-arc .arc-orb .wv.r i:nth-last-child(-n+6){opacity:.35}
 
 /* asset card bottom-left */
-html.premium.skin-arc .arc-card{display:flex;align-items:center;gap:8px;position:absolute;left:52px;bottom:12px;z-index:3;padding:5px;border-radius:12px;background:rgba(12,22,44,.85);border:1px solid rgba(120,160,255,.18);backdrop-filter:blur(8px)}
+html.premium.skin-arc .arc-card{display:flex;align-items:center;gap:8px;position:absolute;left:calc(50% - 330px);bottom:14px;z-index:3;padding:5px;border-radius:12px;background:rgba(12,22,44,.85);border:1px solid rgba(120,160,255,.18);backdrop-filter:blur(8px)}
 html.premium.skin-arc .ac-th{width:92px;height:52px;border-radius:8px;background:#14203a center/cover;position:relative}
 html.premium.skin-arc .ac-th b{position:absolute;left:4px;bottom:3px;font:600 9.5px var(--mono);background:rgba(0,0,0,.55);padding:0 4px;border-radius:3px}
 html.premium.skin-arc #arcAdd{width:34px;height:34px;border-radius:9px;border:1px solid rgba(120,160,255,.3);background:rgba(61,139,255,.12);color:#cfe1ff;font-size:18px;cursor:pointer}
 html.premium.skin-arc .ac-empty{font-size:10px;color:var(--dim);padding:6px 8px;line-height:1.35}
 html.premium.skin-arc .askbar{margin:0 max(8px,calc((100% - 1000px)/2))}
 html.premium.skin-arc .askbar .mic{display:none}
+html.premium.skin-arc .lanes-wrap{scrollbar-width:none}
+html.premium.skin-arc .lanes-wrap::-webkit-scrollbar{display:none}
+html.premium.skin-arc .playhead{bottom:auto;height:100%;min-height:100%}

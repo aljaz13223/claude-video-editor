@@ -83,7 +83,7 @@ host.invoke('env').then(e => applyEdition(e.edition)).catch(() => applyEdition('
 let edgeDrag = false, edgeEv = null, edgeRaf = 0;
 const EDGE = 60;
 $('#lanesWrap').addEventListener('pointerdown', e => { if (e.button !== 0) return; edgeDrag = true; edgeEv = e; }, true);
-addEventListener('pointermove', e => { if (!edgeDrag || !e.isTrusted) return; edgeEv = e; if (!edgeRaf) edgeRaf = requestAnimationFrame(edgeTick); });
+addEventListener('pointermove', e => { if (!edgeDrag || !(e.isTrusted || e.tfArc)) return; edgeEv = e; if (!edgeRaf) edgeRaf = requestAnimationFrame(edgeTick); });
 addEventListener('pointerup', () => { edgeDrag = false; cancelAnimationFrame(edgeRaf); edgeRaf = 0; });
 addEventListener('blur', () => { edgeDrag = false; });
 function edgeTick() {
