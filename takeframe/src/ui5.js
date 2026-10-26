@@ -8,13 +8,15 @@
 const SKINS = [
   { id: 'projection', name: 'Projection room', desc: 'Dark grading suite, lit monitor' },
   { id: 'studio', name: 'Studio', desc: 'AI Dock, Ask Claude bar, colour tracks' },
+  { id: 'arc', name: 'Studio Arc', desc: 'Studio with the curved timeline', extends: 'studio' },
   { id: 'soon', name: 'More skins soon…', disabled: true },
 ];
 let curSkin = 'projection';
 function applySkin(id, persist) {
   if (!SKINS.find(s => s.id === id && !s.disabled)) id = 'projection';
   curSkin = id;
-  for (const s of SKINS) document.documentElement.classList.toggle('skin-' + s.id, s.id === id);
+  const sk = SKINS.find(s => s.id === id);
+  for (const s of SKINS) document.documentElement.classList.toggle('skin-' + s.id, s.id === id || (sk.extends === s.id));
   $$('.skin-sel').forEach(sel => { sel.value = id; });
   if (persist) host.invoke('settings-set', { skin: id });
   const studio = isStudio();
@@ -22,7 +24,7 @@ function applySkin(id, persist) {
   if (!studio && $('#rightTabs [data-t="dock"]').classList.contains('on')) switchTab('right', 'insp');
   renderChips(); setTimeout(() => typeof fitStage === 'function' && fitStage(), 60);
 }
-const isStudio = () => document.documentElement.classList.contains('premium') && curSkin === 'studio';
+const isStudio = () => document.documentElement.classList.contains('premium') && (curSkin === 'studio' || curSkin === 'arc');
 $$('.skin-sel').forEach(sel => {
   sel.innerHTML = SKINS.map(s => `<option value="${s.id}" ${s.disabled ? 'disabled' : ''}>${esc(s.name)}</option>`).join('');
   sel.onchange = () => applySkin(sel.value, true);

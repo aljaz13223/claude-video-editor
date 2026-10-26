@@ -1,6 +1,6 @@
 # Takeframe — third look ("Studio"), notes from references (2026-10-26)
 
-Status: built (2026-10-26) as the Premium skin **Studio** — `src/skins/studio.css` + `src/ui5.js`.
+Status: built (2026-10-26) as the Premium skin **Studio** — `src/skins/studio.css` + `src/ui5.js`; the curved timeline is the separate skin **Studio Arc** — `src/skins/arc.css` + `src/ui6.js` (extends Studio).
 
 ## References
 - `references/ref-02-takeframe-ai-dock.png` — main reference (good direction).
