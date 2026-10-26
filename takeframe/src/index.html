@@ -4,13 +4,14 @@
 <link rel="stylesheet" href="../fonts/fonts.css">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="premium.css">
+<link rel="stylesheet" href="skins/studio.css">
 </head>
 <body class="ws-edit">
 
 <!-- ======================= START ======================= -->
 <div id="start" class="screen">
   <div class="st-top">
-    <div class="brand"><span class="mark"><i></i><i></i></span>Takeframe<span class="edition" title="Lite: simple look for any graphics card · Premium: richer design (needs a better GPU)"><button data-ed="lite">Lite</button><button data-ed="premium">Premium</button></span></div>
+    <div class="brand"><span class="mark"><i></i><i></i></span>Takeframe<span class="edition" title="Lite: simple look for any graphics card · Premium: richer design (needs a better GPU)"><button data-ed="lite">Lite</button><button data-ed="premium">Premium</button></span><select class="skin-sel" title="Premium skin"></select></div>
     <div class="env" id="env"></div>
   </div>
   <div class="st-body">
@@ -72,7 +73,7 @@
     </nav>
     <button class="cmdbar" id="cmdBar" data-run="app.palette"><i class="ti ti-cmd"></i><span>Search commands…</span><kbd data-act="app.palette"></kbd></button>
     <div class="top-r">
-      <span class="edition" title="Lite / Premium design"><button data-ed="lite">Lite</button><button data-ed="premium">Premium</button></span>
+      <span class="edition" title="Lite / Premium design"><button data-ed="lite">Lite</button><button data-ed="premium">Premium</button></span><select class="skin-sel" title="Premium skin"></select>
       <span class="saved" id="saved">Saved</span>
       <button class="btn" id="btnUndo" title="Undo (Ctrl+Z)">↶</button><button class="btn" id="btnRedo" title="Redo (Ctrl+Shift+Z)">↷</button>
       <button class="btn primary" id="btnExport">Export</button>
@@ -130,7 +131,8 @@
     </section>
 
     <aside class="panel right">
-      <div class="tabs" id="rightTabs"><button data-t="insp" class="on">Inspector</button><button data-t="claude">Claude</button><button data-t="flow">Workflow</button><button data-t="hist">History</button></div>
+      <div class="tabs" id="rightTabs"><button data-t="dock" class="dock-tab">AI Dock</button><button data-t="insp" class="on">Inspector</button><button data-t="claude">Claude</button><button data-t="flow">Workflow</button><button data-t="hist">History</button></div>
+      <div class="pbody hidden" data-p="dock"><div id="dock" class="dock"></div></div>
       <div class="pbody" data-p="insp"><div id="insp" class="insp"></div></div>
       <div class="pbody hidden chat" data-p="claude">
         <div class="chat-log" id="chatLog"></div>
@@ -179,6 +181,12 @@
       </div>
     </div>
   </section>
+  <section class="askbar" id="askbar">
+    <button class="mic" id="micBtn" title="Hold to talk (Ctrl+Space)"><i></i></button>
+    <div class="ab-in"><input id="abText" placeholder="Ask Claude… e.g. “cut the quiet parts” or “make it more cinematic”" autocomplete="off"><span class="ab-scope" id="abScope"></span></div>
+    <div class="ab-chips" id="abChips"></div>
+    <button class="ab-send" id="abSend" title="Send (Enter)">↑</button>
+  </section>
 </div>
 
 <!-- ======================= EXPORT ======================= -->
@@ -218,4 +226,5 @@
 <script src="ui2.js"></script>
 <script src="ui3.js"></script>
 <script src="ui4.js"></script>
+<script src="ui5.js"></script>
 </body></html>

@@ -34,6 +34,8 @@ function createWindow() {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, webSecurity: false },
   });
   Menu.setApplicationMenu(null);
+  // microphone for voice commands (push-to-talk); nothing else is granted
+  win.webContents.session.setPermissionRequestHandler((wc, perm, cb, details) => cb(perm === 'media' && (!details.mediaTypes || details.mediaTypes.every(t => t === 'audio'))));
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
   win.once('ready-to-show', () => { win.maximize(); win.show(); });
   if (process.env.TAKEFRAME_DEVTOOLS) win.webContents.openDevTools({ mode: 'detach' });
@@ -127,7 +129,7 @@ ipcMain.handle('env', async () => {
   let gpu = ''; try { gpu = execFileSync('nvidia-smi', ['--query-gpu=name', '--format=csv,noheader'], { windowsHide: true }).toString().trim(); } catch {}
   const clients = fs.existsSync(ROOT) ? fs.readdirSync(ROOT, { withFileTypes: true }).filter(d => d.isDirectory() && fs.existsSync(path.join(ROOT, d.name, 'BRAND.md'))).map(d => d.name) : [];
   let recent = []; try { recent = JSON.parse(fs.readFileSync(RECENT, 'utf8')).filter(r => fs.existsSync(r.file)); } catch {}
-  return { edition: EDITION || readSettings().edition || 'lite', root: ROOT, apiKey: has('ANTHROPIC_API_KEY'), model: MODEL, python: fs.existsSync(PY), ffmpeg: ff, gpu, clients, recent, sfx: fs.existsSync(SFX_DIR) };
+  return { skin: readSettings().skin || 'projection', edition: EDITION || readSettings().edition || 'lite', root: ROOT, apiKey: has('ANTHROPIC_API_KEY'), model: MODEL, python: fs.existsSync(PY), ffmpeg: ff, gpu, clients, recent, sfx: fs.existsSync(SFX_DIR) };
 });
 ipcMain.handle('pick-files', async () => (await dialog.showOpenDialog(win, { properties: ['openFile', 'multiSelections'], filters: [{ name: 'Media', extensions: ['mp4', 'mov', 'mkv', 'webm', 'png', 'jpg', 'jpeg', 'webp', 'wav', 'mp3', 'm4a', 'flac'] }] })).filePaths);
 ipcMain.handle('pick-folder', async (_, def) => (await dialog.showOpenDialog(win, { defaultPath: def || ROOT, properties: ['openDirectory'] })).filePaths[0] || null);
@@ -209,6 +211,15 @@ ipcMain.handle('transcribe', async (_, { src, lang }) => {
   const out = path.join(HOME_DIR, 'transcripts', Buffer.from(src).toString('base64url').slice(-50) + '.json'); fs.mkdirSync(path.dirname(out), { recursive: true });
   if (!fs.existsSync(out)) await py('transcribe.py', [src, out, ...(lang ? ['--lang', lang] : [])]);
   return JSON.parse(fs.readFileSync(out, 'utf8'));
+});
+// voice command: recorded audio from the renderer → local Whisper (small model, fast) → text
+ipcMain.handle('voice', async (_, { data, lang }) => {
+  const dir = path.join(HOME_DIR, 'voice'); fs.mkdirSync(dir, { recursive: true });
+  const f = path.join(dir, `cmd_${Date.now()}.webm`); fs.writeFileSync(f, Buffer.from(data));
+  const out = f.replace('.webm', '.json');
+  await py('transcribe.py', [f, out, '--model', process.env.TAKEFRAME_VOICE_MODEL || 'small', ...(lang ? ['--lang', lang] : [])]);
+  const j = JSON.parse(fs.readFileSync(out, 'utf8'));
+  return { text: j.segments.map(s => s.text).join(' ').trim(), language: j.language };
 });
 ipcMain.handle('stems', async (_, { src }) => {
   const dir = path.join(HOME_DIR, 'stems', Buffer.from(src).toString('base64url').slice(-40));

@@ -10,6 +10,7 @@ Desktop video editor where Claude makes the edit with our skills and you fine-tu
    - `START-TAKEFRAME-LITE.bat` — flat design without blur or animation, runs on any graphics card.
    - `START-TAKEFRAME-PREMIUM.bat` — richer “projection room” design (glass panels, lit monitor), for a decent GPU.
    You can also switch with the Lite / Premium toggle in the top bar; the choice is remembered.
+   Premium has **skins** (select next to the toggle): *Projection room* and *Studio* (AI Dock, Ask Claude bar with voice, colour tracks). New skins: add `src/skins/<id>.css` (selectors `html.premium.skin-<id>`) and an entry in `SKINS` in `src/ui5.js`.
 
 Model: `claude-opus-5-5` by default; set `TAKEFRAME_MODEL` to change it.
 

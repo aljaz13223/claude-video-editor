@@ -1,6 +1,6 @@
 # Takeframe — third look ("Studio"), notes from references (2026-10-26)
 
-Status: saved for later, not built yet. Built next to Lite and Premium as a third edition.
+Status: built (2026-10-26) as the Premium skin **Studio** — `src/skins/studio.css` + `src/ui5.js`.
 
 ## References
 - `references/ref-02-takeframe-ai-dock.png` — main reference (good direction).
