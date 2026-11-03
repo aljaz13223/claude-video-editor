@@ -27,6 +27,13 @@ came out of many rounds of feedback — see [`docs/EDITING-RULES.md`](docs/EDITI
 
 `cve all <proj>` runs cut → crop → build → music → render → timeline.
 
+## Workflow (brief → plan → preview → final)
+
+Every job starts with a one-screen **brief** (format, graphics theme, sound profile, zoom/b-roll) and an approved
+**edit plan** before anything renders — see [`docs/WORKFLOW.md`](docs/WORKFLOW.md) and the skills
+[`video-brief`](skills/video-brief), [`work-log`](skills/work-log) (day-by-day log of all work) and
+[`github-sync`](skills/github-sync) (publish generic code with a secret/private-name scan).
+
 ### Styles — pick how Claude edits your video
 
 Every edit style is a folder in [`styles/`](styles/) with a reference image, a description and its own template.
