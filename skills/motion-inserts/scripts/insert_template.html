@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=__W__, height=__H__" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Playfair+Display:ital,wght@1,600;1,800&family=Poppins:wght@600;700;800&family=Space+Grotesk:wght@500;700&display=block" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: __W__px; height: __H__px; overflow: hidden; background: var(--bg); }
+  :root { __TOKENS__ }
+  #root { position: relative; width: __W__px; height: __H__px; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--sans); }
+  #bgfx { position: absolute; inset: -10%; background: var(--bgfx); }
+  #grain { position: absolute; inset: 0; opacity: var(--grain); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); mix-blend-mode: multiply; pointer-events: none; z-index: 9; }
+  #stage { position: absolute; transform-origin: 50% 50%; }
+  #face { position: absolute; object-fit: cover; z-index: 6; }
+  .acc { color: var(--acc); }
+  .ser { font-family: var(--serif); font-style: italic; font-weight: 800; }
+  .lbl { font-family: var(--sans); font-weight: 600; color: var(--mut); }
+  .card { background: var(--card); border: 1.5px solid var(--line); border-radius: calc(24px * var(--s)); }
+  svg { overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="__DUR__" data-width="__W__" data-height="__H__">
+  __FACE__
+  <div id="scene" class="clip" data-start="0" data-duration="__DUR__" data-track-index="2">
+    <div id="bgfx"></div>
+    <div id="stage"></div>
+    <div id="grain"></div>
+  </div>
+</div>
+<script>
+const D = __DATA__;
+const W = __W__, H = __H__;
+const S = Math.min(W, H) / 1080;              // scale unit
+document.documentElement.style.setProperty("--s", S);
+const IR = { immediateRender: false };
+const C = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const tl = gsap.timeline({ paused: true });
+window.__timelines = window.__timelines || {};
+
+// ---- layout: full | half (graphic top, face bottom) | pip (face circle) ----
+const st = document.getElementById("stage");
+let box = { x: 0, y: 0, w: W, h: H };
+if (D.layout === "half") box = { x: 0, y: 0, w: W, h: Math.round(H * 0.56) };
+if (D.layout === "pip") box = { x: 0, y: 0, w: W, h: Math.round(H * 0.80) };
+st.style.left = box.x + "px"; st.style.top = box.y + "px"; st.style.width = box.w + "px"; st.style.height = box.h + "px";
+const face = document.getElementById("face");
+if (face) {
+  if (D.layout === "half") Object.assign(face.style, { left: "0px", top: box.h + "px", width: W + "px", height: (H - box.h) + "px", objectPosition: "50% " + (D.face_y || 30) + "%" });
+  else { const d = Math.round(Math.min(W, H) * 0.30); Object.assign(face.style, { width: d + "px", height: d + "px", right: Math.round(40*S) + "px", bottom: Math.round(H*0.12) + "px", borderRadius: "50%", border: (4*S) + "px solid var(--acc)", objectPosition: "50% " + (D.face_y || 30) + "%" }); }
+}
+const K = (box.h / box.w > 1.4) ? 1.25 : 1;   // portrait: everything bigger
+const cx = box.w / 2, cy = box.h / 2, u = Math.min(box.w, box.h) / 1080 * K;   // u = unit inside stage
+const px = (v) => Math.round(v * u) + "px";
+const el = (tag, css, html) => { const e = document.createElement(tag); Object.assign(e.style, { position: "absolute" }, css || {}); if (html != null) e.innerHTML = html; st.appendChild(e); return e; };
+const words = (t) => t.split(/(\*[^*]+\*)/).filter(Boolean).map(p => p.startsWith("*") ? `<span class="acc ser">${p.slice(1, -1)}</span>` : p).join("");
+const T = D.dur;
+
+// ---- MOTION RULES: camera never stops; nothing waits empty; nothing grows from 0 ----
+tl.fromTo("#stage", { scale: 1.0, x: 0, y: 0 }, { scale: 1.06, x: -12 * u * (D.drift || 1), y: -8 * u, duration: T, ease: "none" }, 0);
+tl.fromTo("#bgfx", { x: 0, y: 0, rotation: 0 }, { x: -40 * u, y: -24 * u, rotation: 1.2, duration: T, ease: "none" }, 0);
+tl.fromTo("#scene", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0);
+tl.to("#scene", { opacity: 0, duration: 0.3, ease: "power2.in" }, T - 0.3);
+const IN = (t, d) => ({ duration: d || 0.6, ease: "expo.out", ...IR });
+function title(txt, y, size) {
+  if (!txt) return null;
+  const e = el("div", { left: px(70), right: px(70), top: y, textAlign: "center", fontWeight: 900, fontSize: px(size || 74), lineHeight: 1.05, letterSpacing: "-0.02em" }, words(txt));
+  tl.fromTo(e, { opacity: 0, y: 30 * u, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, ...IN() }, 0.15);
+  return e;
+}
+function sub(txt, y) {
+  if (!txt) return null;
+  const e = el("div", { left: px(90), right: px(90), top: y, textAlign: "center", fontSize: px(36), fontWeight: 600, color: "var(--mut)", lineHeight: 1.25 }, words(txt));
+  tl.fromTo(e, { opacity: 0, y: 20 * u }, { opacity: 1, y: 0, ...IN() }, 0.45);
+  return e;
+}
+const fmt = (v, dec) => (dec ? v.toFixed(dec) : Math.round(v).toLocaleString("sl-SI"));
+
+// ---- SCENES ----
+const SCENES = {
+  // big number counting up
+  stat(d) {
+    title(d.title, px(box.h / u * 0.16), 60);
+    const n = el("div", { left: 0, right: 0, top: px(box.h / u * 0.34), textAlign: "center", fontWeight: 900, fontSize: px(d.size || 260), lineHeight: 1, color: "var(--acc)", letterSpacing: "-0.04em" }, (d.prefix || "") + "0" + (d.suffix || ""));
+    const o = { v: d.from || 0 };
+    tl.fromTo(n, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, ...IN(0, 0.5) }, 0.3);
+    tl.to(o, { v: d.value, duration: Math.min(1.8, T * 0.45), ease: "power3.out", onUpdate: () => n.textContent = (d.prefix || "") + fmt(o.v, d.decimals) + (d.suffix || ""), ...IR }, 0.35);
+    const ln = el("div", { left: "50%", top: px(box.h / u * 0.34 + (d.size || 260) + 40), width: px(160), height: px(6), marginLeft: px(-80), background: "var(--acc)", borderRadius: px(3), transformOrigin: "0 50%" });
+    tl.fromTo(ln, { scaleX: 0.1, opacity: 0 }, { scaleX: 1, opacity: 1, ...IN() }, 0.9);
+    sub(d.sub, px(box.h / u * 0.34 + (d.size || 260) + 90));
+  },
+  // bar chart, one bar highlighted
+  bar(d) {
+    title(d.title, px(box.h / u * 0.10), 60);
+    const items = d.items, n = items.length, max = Math.max(...items.map(i => i.v));
+    const top = box.h / u * 0.30, bh = box.h / u * 0.50, bw = Math.min(170, (box.w / u - 200) / n - 40), gap = (box.w / u - n * bw) / (n + 1);
+    items.forEach((it, i) => {
+      const h = bh * it.v / max, x = gap + i * (bw + gap), hi = it.hi || (d.hi === i);
+      const b = el("div", { left: px(x), top: px(top + bh - h), width: px(bw), height: px(h), background: hi ? "var(--acc)" : "var(--bar)", borderRadius: px(14) + " " + px(14) + " 0 0", transformOrigin: "50% 100%" });
+      const v = el("div", { left: px(x - 40), width: px(bw + 80), top: px(top + bh - h - 70), textAlign: "center", fontWeight: 800, fontSize: px(44), color: hi ? "var(--acc)" : "var(--fg)" }, (d.prefix || "") + it.v + (d.suffix || ""));
+      const l = el("div", { left: px(x - 50), width: px(bw + 100), top: px(top + bh + 20), textAlign: "center", fontSize: px(32), fontWeight: 600, color: "var(--mut)" }, it.l);
+      const t0 = 0.45 + i * 0.18;
+      tl.fromTo(b, { scaleY: 0.04 }, { scaleY: 1, ...IN(0, 0.9) }, t0);
+      tl.fromTo([v, l], { opacity: 0, y: 14 * u }, { opacity: 1, y: 0, ...IN() }, t0 + 0.3);
+      if (hi) tl.to(b, { boxShadow: "0 0 " + px(50) + " " + C("--acc"), duration: 0.6, yoyo: true, repeat: 1, ...IR }, t0 + 1.0);
+    });
+    const base = el("div", { left: px(gap * 0.5), right: px(gap * 0.5), top: px(top + bh), height: px(3), background: "var(--line)" });
+    tl.fromTo(base, { scaleX: 0.2, opacity: 0 }, { scaleX: 1, opacity: 1, ...IN() }, 0.3);
+    sub(d.sub, px(top + bh + 100));
+  },
+  // line graph with a dot travelling along it (camera follows)
+  line(d) {
+    title(d.title, px(box.h / u * 0.08), 58);
+    const pts = d.points, n = pts.length, mx = Math.max(...pts), mn = Math.min(0, ...pts);
+    const gx = 110, gw = box.w / u - 220, gy = box.h / u * 0.28, gh = box.h / u * 0.48;
+    const P = pts.map((v, i) => [gx + gw * i / (n - 1), gy + gh - gh * (v - mn) / (mx - mn || 1)]);
+    const svg = el("div", { left: 0, top: 0, width: px(box.w / u), height: px(box.h / u) });
+    const sc = (v) => v * u;
+    let grid = ""; for (let k = 0; k <= 4; k++) grid += `<line x1="${sc(gx)}" x2="${sc(gx + gw)}" y1="${sc(gy + gh * k / 4)}" y2="${sc(gy + gh * k / 4)}" stroke="var(--line)" stroke-width="${1.5*u}"/>`;
+    const dPath = P.map((p, i) => (i ? "L" : "M") + sc(p[0]) + " " + sc(p[1])).join(" ");
+    svg.innerHTML = `<svg width="${box.w}" height="${box.h}">${grid}<path id="lp" d="${dPath}" fill="none" stroke="var(--acc)" stroke-width="${7*u}" stroke-linecap="round" stroke-linejoin="round"/><circle id="dot" r="${16*u}" fill="var(--acc)"/></svg>`;
+    const path = svg.querySelector("#lp"), dot = svg.querySelector("#dot"), L = path.getTotalLength();
+    path.style.strokeDasharray = L; path.style.strokeDashoffset = L;
+    const o = { p: 0 }, t0 = 0.5, dd = Math.min(T - 1.6, 2.6);
+    const at = (p) => path.getPointAtLength(L * p);
+    dot.setAttribute("cx", at(0).x); dot.setAttribute("cy", at(0).y);
+    tl.to(o, { p: 1, duration: dd, ease: "power1.inOut", onUpdate: () => { path.style.strokeDashoffset = L * (1 - o.p); const q = at(o.p); dot.setAttribute("cx", q.x); dot.setAttribute("cy", q.y); }, ...IR }, t0);
+    (d.labels || []).forEach((lb, i) => { const p = P[Math.round(i * (n - 1) / Math.max(1, d.labels.length - 1))]; const e = el("div", { left: px(p[0] - 90), width: px(180), top: px(gy + gh + 24), textAlign: "center", fontSize: px(30), fontWeight: 600, color: "var(--mut)" }, lb); tl.fromTo(e, { opacity: 0 }, { opacity: 1, duration: 0.4, ...IR }, t0 + dd * i / Math.max(1, d.labels.length - 1)); });
+    if (d.end_label) { const p = P[n - 1]; const e = el("div", { left: px(p[0] - 260), width: px(260), top: px(p[1] - 90), textAlign: "right", fontWeight: 900, fontSize: px(54), color: "var(--acc)" }, d.end_label); tl.fromTo(e, { opacity: 0, y: 16 * u }, { opacity: 1, y: 0, ...IN() }, t0 + dd - 0.1); }
+    // camera follows the dot (pan inside stage)
+    tl.fromTo(svg, { x: 40 * u }, { x: -40 * u, duration: dd + 0.8, ease: "sine.inOut", ...IR }, t0);
+    sub(d.sub, px(gy + gh + 90));
+  },
+  // numbered steps / process, connected by a line
+  steps(d) {
+    title(d.title, px(box.h / u * 0.08), 58);
+    const n = d.items.length, top = box.h / u * 0.26, rowH = Math.min(190, (box.h / u * 0.66) / n);
+    const ln = el("div", { left: px(150), top: px(top + 40), width: px(4), height: px(rowH * (n - 1)), background: "var(--line)", transformOrigin: "50% 0" });
+    tl.fromTo(ln, { scaleY: 0.05 }, { scaleY: 1, duration: 0.5 + n * 0.35, ease: "power2.inOut", ...IR }, 0.4);
+    const per = Math.max(0.5, (T - 1.5) / n);
+    d.items.forEach((it, i) => {
+      const y = top + i * rowH, t0 = 0.45 + i * per;
+      const c = el("div", { left: px(110), top: px(y), width: px(84), height: px(84), borderRadius: "50%", background: "var(--acc)", color: "var(--bg)", fontWeight: 900, fontSize: px(44), display: "flex", alignItems: "center", justifyContent: "center" }, String(i + 1));
+      const t = el("div", { left: px(230), right: px(70), top: px(y + 8), fontWeight: 800, fontSize: px(52), lineHeight: 1.08 }, words(it));
+      tl.fromTo(c, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, ...IN(0, 0.5) }, t0);
+      tl.fromTo(t, { opacity: 0, x: 40 * u }, { opacity: 1, x: 0, ...IN() }, t0 + 0.08);
+      if (i < n - 1) tl.to(t, { opacity: 0.45, duration: 0.4, ...IR }, t0 + per);
+    });
+  },
+  // A vs B
+  compare(d) {
+    title(d.title, px(box.h / u * 0.08), 58);
+    const top = box.h / u * 0.30, colW = (box.w / u - 200) / 2;
+    [d.a, d.b].forEach((c, k) => {
+      const x = 70 + k * (colW + 60);
+      const card = el("div", { left: px(x), top: px(top), width: px(colW), padding: px(36) + " " + px(30) + " " + px(44) }, `<div style="font-weight:900;font-size:${px(54)};${k ? "color:var(--acc)" : ""}">${c.h}</div>` + c.items.map(i => `<div style="margin-top:${px(26)};font-size:${px(38)};font-weight:600;line-height:1.15">${k ? "✓" : "✕"} ${i}</div>`).join(""));
+      card.className = "card";
+      tl.fromTo(card, { opacity: 0, y: 50 * u }, { opacity: 1, y: 0, ...IN(0, 0.8) }, 0.4 + k * 0.5);
+      if (k) tl.to(card, { borderColor: C("--acc"), boxShadow: "0 0 " + px(40) + " rgba(0,0,0,0.3)", duration: 0.5, ...IR }, 1.4);
+    });
+    const vs = el("div", { left: px(box.w / u / 2 - 45), top: px(top + 110), width: px(90), height: px(90), borderRadius: "50%", background: "var(--bg)", border: "2px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: px(34) }, "vs");
+    tl.fromTo(vs, { opacity: 0, rotation: -40 }, { opacity: 1, rotation: 0, ...IN() }, 0.8);
+  },
+  // quotation scene (text-centric)
+  quote(d) {
+    const wrap = el("div", { left: px(90), right: px(90), top: px(box.h / u * 0.30), textAlign: "center" });
+    wrap.innerHTML = `<div style="font-family:var(--serif);font-style:italic;font-weight:800;font-size:${px(220)};line-height:0.6;height:${px(120)};color:var(--acc)">“</div>`
+      + `<div class="qt" style="font-weight:800;font-size:${px(d.size || 72)};line-height:1.12">${words(d.text)}</div>`
+      + (d.who ? `<div style="margin-top:${px(40)};font-size:${px(34)};font-weight:600;color:var(--mut)">— ${d.who}</div>` : "");
+    const [mk, t, who] = wrap.children;
+    tl.fromTo(mk, { opacity: 0, y: 30 * u }, { opacity: 1, y: 0, ...IN(0, 0.7) }, 0.2);
+    const ws = t.innerHTML.split(/(?![^<]*>) /);
+    t.innerHTML = ws.map(w => `<span style="display:inline-block;margin-right:0.25em">${w}</span>`).join("");
+    tl.fromTo(t.children, { opacity: 0, y: 24 * u }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: Math.min(0.12, (T * 0.5) / ws.length), ...IR }, 0.45);
+    if (who) tl.fromTo(who, { opacity: 0 }, { opacity: 1, duration: 0.5, ...IR }, 1.2);
+  },
+  // a line that draws through key words (Arthur-style)
+  linetext(d) {
+    const n = d.words.length, top = box.h / u * 0.2, step = (box.h / u * 0.62) / Math.max(1, n - 1);
+    const pts = d.words.map((w, i) => [i % 2 ? box.w / u * 0.68 : box.w / u * 0.32, top + i * step]);
+    const sc = (v) => v * u;
+    const dP = "M" + sc(-20) + " " + sc(top - 80) + " " + pts.map(p => "L" + sc(p[0]) + " " + sc(p[1])).join(" ");
+    const svg = el("div", { left: 0, top: 0 });
+    svg.innerHTML = `<svg width="${box.w}" height="${box.h}"><path id="lt" d="${dP}" fill="none" stroke="var(--acc)" stroke-width="${5*u}" stroke-linecap="round"/></svg>`;
+    const path = svg.querySelector("#lt"), L = path.getTotalLength(); path.style.strokeDasharray = L; path.style.strokeDashoffset = L;
+    const dd = T - 1.2; const o = { p: 0 };
+    tl.to(o, { p: 1, duration: dd, ease: "none", onUpdate: () => path.style.strokeDashoffset = L * (1 - o.p), ...IR }, 0.3);
+    d.words.forEach((w, i) => {
+      const p = pts[i];
+      const e = el("div", { left: px(p[0] - 260), width: px(520), top: px(p[1] - 50), textAlign: "center", fontSize: px(84), fontWeight: 900, background: "var(--bg)", padding: px(6) + " " + px(14) }, words(w));
+      tl.fromTo(e, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, ...IN() }, 0.3 + dd * (i + 0.6) / (n + 0.6));
+    });
+  },
+  // key word big in the centre, small words around (caption-design scene)
+  keyword(d) {
+    const big = el("div", { left: 0, right: 0, top: px(box.h / u * 0.40), textAlign: "center", fontSize: px(d.size || 170), lineHeight: 1, fontWeight: 900, letterSpacing: "-0.03em" }, words(d.word));
+    const a = el("div", { left: 0, right: 0, top: px(box.h / u * 0.40 - 70), textAlign: "center", fontSize: px(44), fontWeight: 600, color: "var(--mut)" }, d.above || "");
+    const b = el("div", { left: 0, right: 0, top: px(box.h / u * 0.40 + (d.size || 170) + 20), textAlign: "center", fontSize: px(44), fontWeight: 600, color: "var(--mut)" }, d.below || "");
+    tl.fromTo(a, { opacity: 0, y: -16 * u }, { opacity: 1, y: 0, ...IN() }, 0.2);
+    tl.fromTo(big, { opacity: 0, scale: 0.88, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", ...IN(0, 0.8) }, 0.35);
+    tl.fromTo(b, { opacity: 0, y: 16 * u }, { opacity: 1, y: 0, ...IN() }, 0.6);
+  },
+  // years / milestones along a horizontal line
+  timeline(d) {
+    title(d.title, px(box.h / u * 0.12), 58);
+    const n = d.items.length, y = box.h / u * 0.52, x0 = 90, x1 = box.w / u - 90;
+    const ln = el("div", { left: px(x0), top: px(y), width: px(x1 - x0), height: px(4), background: "var(--line)", transformOrigin: "0 50%" });
+    tl.fromTo(ln, { scaleX: 0.03 }, { scaleX: 1, duration: T - 1.2, ease: "power1.inOut", ...IR }, 0.3);
+    d.items.forEach((it, i) => {
+      const x = x0 + (x1 - x0) * (i + 0.5) / n, t0 = 0.4 + (T - 1.4) * (i + 0.5) / n, upper = i % 2 === 0;
+      const dot = el("div", { left: px(x - 14), top: px(y - 12), width: px(28), height: px(28), borderRadius: "50%", background: "var(--acc)" });
+      const yr = el("div", { left: px(x - 120), width: px(240), top: px(upper ? y - 120 : y + 40), textAlign: "center", fontWeight: 900, fontSize: px(52), color: "var(--acc)" }, it.y);
+      const tx = el("div", { left: px(x - 140), width: px(280), top: px(upper ? y - 200 : y + 110), textAlign: "center", fontWeight: 600, fontSize: px(30), lineHeight: 1.15 }, it.t);
+      tl.fromTo(dot, { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2)", ...IR }, t0);
+      tl.fromTo([yr, tx], { opacity: 0, y: (upper ? 14 : -14) * u }, { opacity: 1, y: 0, ...IN() }, t0 + 0.05);
+    });
+  },
+  // checklist ticking items
+  checklist(d) {
+    title(d.title, px(box.h / u * 0.10), 58);
+    const n = d.items.length, top = box.h / u * 0.28, rowH = Math.min(150, (box.h / u * 0.6) / n), per = Math.max(0.45, (T - 1.4) / n);
+    d.items.forEach((it, i) => {
+      const y = top + i * rowH, t0 = 0.5 + i * per;
+      const bx = el("div", { left: px(110), top: px(y), width: px(70), height: px(70), borderRadius: px(16), border: px(4) + " solid var(--acc)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--bg)", fontSize: px(52), fontWeight: 900, background: "transparent" }, '<span style="opacity:0">✓</span>');
+      const t = el("div", { left: px(220), right: px(60), top: px(y + 6), fontWeight: 800, fontSize: px(50) }, words(it));
+      tl.fromTo([bx, t], { opacity: 0, x: 30 * u }, { opacity: 1, x: 0, ...IN(), stagger: 0.06 }, t0);
+      tl.to(bx, { backgroundColor: C("--acc"), duration: 0.2, ...IR }, t0 + 0.35);
+      tl.fromTo(bx.firstChild, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)", ...IR }, t0 + 0.35);
+    });
+  },
+};
+(SCENES[D.type] || SCENES.keyword)(D);
+window.__timelines["main"] = tl;
+tl.seek(0);
+</script>
+</body>
+</html>

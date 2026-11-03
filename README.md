@@ -34,6 +34,15 @@ Every job starts with a one-screen **brief** (format, graphics theme, sound prof
 [`video-brief`](skills/video-brief), [`work-log`](skills/work-log) (day-by-day log of all work) and
 [`github-sync`](skills/github-sync) (publish generic code with a secret/private-name scan).
 
+| Skill | What it does |
+|---|---|
+| [`motion-inserts`](skills/motion-inserts) | graphs, counting numbers, steps, before/after, quotes, timelines, checklists **inside** a talking-head video — full, half-screen (speaker stays visible) or picture-in-picture; JSON spec → HyperFrames → overlaid in sync |
+| [`hooks-and-story`](skills/hooks-and-story) | clip choice, 4 S hook test, triple hook, announce → face / describe → show |
+| [`sound-profiles`](skills/sound-profiles) | story-loop / energy / no music / tonal; levels, music breaks, −14 LUFS |
+| [`quality-check`](skills/quality-check) | stills, captions = speech, rules, `motion_check.py` (still time, flashes), strict 1–10 score |
+| [`style-training`](skills/style-training) | train a whole style from 10–20 references into a skill + reference library |
+| [`ad-creative`](skills/ad-creative) | paid-social creatives: lead-in, barbell, testing order |
+
 ### Styles — pick how Claude edits your video
 
 Every edit style is a folder in [`styles/`](styles/) with a reference image, a description and its own template.

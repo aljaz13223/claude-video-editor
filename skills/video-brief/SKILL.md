@@ -20,7 +20,10 @@ decision into **two cheap checkpoints** — a brief and a plan — so the expens
    - **Format / resolution** — 9:16 1080×1920 (Reels/Shorts/TikTok) · 4:5 1080×1350 (FB/IG feed) · 16:9 1920×1080 (YouTube) · 1:1 1080×1080.
    - **Graphics theme** — one style from the style library (`styles/`, or `00-SISTEM/stili`) + amount: *malo* (hook + lower third + CTA) · *srednje* (+ 2–4 key-line cards) · *veliko* (scene per idea, b-roll).
    - **Sound profile** — see table below.
-   - **Zoom / b-roll** — emotional zooms only · punch-in for distant camera · none; b-roll yes/no.
+   - **Zoom / b-roll / motion graphics** — zoom: emotional only · punch-in for distant camera · none; b-roll yes/no;
+     **motion inserts** (graphs, numbers, steps, quotes … inside the video, skill `motion-inserts`): none · 1–2 on key numbers · one per idea;
+     layout: half (speaker stays visible, default) · pip · full; theme for the inserts (same as graphics theme by default).
+   Fold zoom/b-roll/inserts into one question when the client preset already answers most of it.
 3. Write `brief.json` (template: `brief-template.json`) into the project folder and log it (`work-log`).
 
 ### Sound profiles
@@ -31,6 +34,15 @@ decision into **two cheap checkpoints** — a brief and a plan — so the expens
 | `brez-glasbe` | room tone only | — | none | serious/emotional statements |
 | `tonalni` | drone + tonal risers/hits on key words | −21 dB | tonal only | premium minimal style |
 Never commercial songs without confirmed rights. Log every track used (no repeats per client).
+
+### Motion inserts in the brief
+Ask only if the video has numbers, comparisons, lists, processes or a quotable line (scan the transcript first and name them:
+*"Govori o 72 % in o 3 korakih — dam graf in korake (pol ekrana, govorec spodaj)?"*). The plan then lists each insert with
+`type`, `layout`, `dur`; build them with `motion-inserts` after the plan is approved.
+
+## Related skills
+`hooks-and-story` (hook, clip choice, announce→face / describe→show) · `motion-inserts` · `sound-profiles` ·
+`quality-check` (before anything is shown) · `style-training` (new style) · `ad-creative` (ads) · `work-log` · `github-sync`.
 
 ## 1 — Cut
 Word-level transcript, remove silences/bad takes (30 ms padding), cut only on pauses ≥ 0.4 s. Report "X s raw → Y s".
@@ -43,6 +55,7 @@ Write `plan.md` as a table and send it; build nothing until the user approves or
 | 0.0 | "…hook…" | face + hook title | — | loop "curious" in |
 | 4.2 | "…announces point 1…" | **face** (announce = face) | — | — |
 | 6.8 | "…describes it…" | **show it**: b-roll / card | — (never zoom on b-roll) | — |
+| 11.0 | "…72 % of people…" | insert `stat` 72 %, layout half, 4 s | — (never zoom on inserts) | — |
 | 18.5 | "…emotional line…" | face | punch-in 1.16× | music break |
 
 Rules for proposing: announce → face, describe → show; ≤ 1 visual idea per sentence; graphics ≥ 3 s and never

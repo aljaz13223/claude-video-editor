@@ -2,12 +2,23 @@
   "project": "2026-11-03_example-reel",
   "client": "example",
   "goal": "objava | oglas | vabilo | clip",
-  "length_s": [30, 60],
+  "length_s": [
+    30,
+    60
+  ],
   "formats": {
-    "9x16": [1080, 1920],
-    "4x5": [1080, 1350]
+    "9x16": [
+      1080,
+      1920
+    ],
+    "4x5": [
+      1080,
+      1350
+    ]
   },
-  "versions": ["A"],
+  "versions": [
+    "A"
+  ],
   "graphics": {
     "theme": "warm-dark",
     "amount": "malo",
@@ -33,5 +44,22 @@
     "paid_ai_credits": 0
   },
   "deliver_to": "03-final/",
-  "notes": ""
+  "notes": "",
+  "motion_inserts": {
+    "amount": "key-numbers",
+    "layout": "half",
+    "theme": "same-as-graphics",
+    "types": [
+      "stat",
+      "bar",
+      "line",
+      "steps",
+      "compare",
+      "quote",
+      "keyword",
+      "timeline",
+      "checklist",
+      "linetext"
+    ]
+  }
 }
