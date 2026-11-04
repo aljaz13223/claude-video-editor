@@ -44,6 +44,16 @@ THEMES = {
     "drift": dict(bg="#06071a", fg="#eef0ff", acc="#3de1d6", mut="rgba(200,205,255,0.7)", line="rgba(123,108,255,0.35)", bar="rgba(123,108,255,0.35)",
                   card="rgba(123,108,255,0.10)", sans="'Space Grotesk'", serif="'Playfair Display'", grain="0",
                   bgfx="radial-gradient(ellipse at 30% 30%, rgba(123,108,255,0.30), transparent 55%), radial-gradient(ellipse at 75% 70%, rgba(61,225,214,0.18), transparent 55%)"),
+    # from IG references (2026-11-04)
+    "warm-editorial": dict(bg="#1c120c", fg="#f3e6d6", acc="#e0a96d", mut="rgba(243,230,214,0.65)", line="rgba(224,169,109,0.30)", bar="rgba(243,230,214,0.16)",
+                  card="rgba(255,255,255,0.06)", sans="'Inter'", serif="'Playfair Display'", grain="0.2",
+                  bgfx="radial-gradient(ellipse at 50% 20%, rgba(150,90,50,0.45), rgba(28,18,12,0) 65%)"),
+    "audio-lab": dict(bg="#050505", fg="#eaeaea", acc="#2bd86b", mut="#8a8a8a", line="rgba(43,216,107,0.25)", bar="rgba(255,255,255,0.12)",
+                  card="#111111", sans="'Space Grotesk'", serif="'Playfair Display'", grain="0",
+                  bgfx="none"),
+    "grid-blue": dict(bg="#ffffff", fg="#111827", acc="#2563eb", mut="#6b7280", line="rgba(37,99,235,0.18)", bar="rgba(17,24,39,0.10)",
+                  card="#ffffff", sans="'Inter'", serif="'Playfair Display'", grain="0",
+                  bgfx="linear-gradient(90deg, rgba(17,24,39,0.06) 1px, transparent 1px) 0 0/64px 64px, linear-gradient(0deg, rgba(17,24,39,0.06) 1px, transparent 1px) 0 0/64px 64px"),
 }
 
 def load_themes(spec_dir):

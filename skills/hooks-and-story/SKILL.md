@@ -15,6 +15,15 @@ description: Pick the moment, write the hook and order the story of a short, ree
   like a quote. Start at the climax, not at the beginning of the story.
 - **Lock-in zone** (5–10 s after the hook): confirm the promise + trust (clean picture/sound, relatable, proof).
 
+## Triple hook method (context → lean → snapback)
+1. **Context** in the first line — said, shown and written. Even delaying it to the back half of the first sentence raises skips.
+2. **Lean**: make them curious in one direction ("most people get step two wrong").
+3. **Snapback**: a twist against the expectation the lean set up, then deliver.
+
+## Instagram/TikTok safe zones
+Keep captions and key text out of the right 15 % (like/comment/share column) and the bottom 20 % (caption + username),
+and out of the top 10 %. Text may go *behind* the speaker's head (see motion-inserts `text_behind.py`) but never over the mouth.
+
 ## Choosing a clip from a long recording
 One idea, 20–70 s, stands alone, first sentence is already a hook; prefer one continuous answer over stitched fragments;
 personal stories and general ideas over accusations against people or groups. Speech starts within 0.4 s, ends on the last word.

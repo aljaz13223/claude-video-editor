@@ -34,6 +34,16 @@ Built in: `paper` (premium minimal: paper + ink + one blue), `paper-dark`, `dark
 Brand themes (client colours/fonts) go in `themes.local.json` next to the spec — never into the public repo:
 `{"brand-x": {"bg": "#fff", "fg": "#333", "acc": "#dd722a", "mut": "#777", "line": "rgba(0,0,0,.15)", "bar": "rgba(0,0,0,.12)", "card": "#f7f7f7", "sans": "'Poppins'", "serif": "'Playfair Display'", "grain": "0", "bgfx": "none"}}`.
 
+### Text behind the speaker (`scripts/text_behind.py`)
+One big word in the background, the speaker in front of it (MediaPipe person segmentation, model downloaded once).
+`python text_behind.py in.mp4 out.mp4 --text "MOTION" --t0 2 --t1 5.5 --y 0.22 --size 0.16`
+Rules: 1 word (max 2), top third, the head may cover at most ~30 % of the word (move `--y` up or shorten the word),
+≥ 1.2 s on screen, once or twice per video — it is a signature moment, not a caption style.
+
+### Themes from the IG references
+`warm-editorial` (dark brown gradient, cream text, tan accent — editorial "how I edit" look), `audio-lab` (black,
+green bars, mono labels — technical explainers), `grid-blue` (white grid paper, blue accent — tool/flow diagrams).
+
 ## Steps
 1. **Pick moments from the plan** (`video-brief` plan table, column "on screen"): one insert per idea that has a number,
    comparison, list, process or quote. Typical 60 s reel: 2–4 inserts. Announce → face, describe → insert.

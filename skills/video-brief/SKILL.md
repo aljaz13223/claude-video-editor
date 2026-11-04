@@ -35,6 +35,10 @@ decision into **two cheap checkpoints** — a brief and a plan — so the expens
 | `tonalni` | drone + tonal risers/hits on key words | −21 dB | tonal only | premium minimal style |
 Never commercial songs without confirmed rights. Log every track used (no repeats per client).
 
+### Simple vs stylish
+The more complex the product (B2B, education, services), the simpler the visuals: clarity over decoration.
+Stylish/fast edits suit simple B2C products and entertainment. Put this in the brief's `graphics.amount`.
+
 ### Motion inserts in the brief
 Ask only if the video has numbers, comparisons, lists, processes or a quotable line (scan the transcript first and name them:
 *"Govori o 72 % in o 3 korakih — dam graf in korake (pol ekrana, govorec spodaj)?"*). The plan then lists each insert with

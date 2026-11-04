@@ -17,6 +17,8 @@ Check frames, not code. Never report "done" from a log line.
 4. **Pacing**: `python scripts/motion_check.py final.mp4` → seconds with no motion (aim: under 15 % of the video for motion
    pieces; talking face counts as motion), longest still stretch (> 2 s in a graphic = add movement), flashes < 0.3 s.
 5. **Cuts**: frame strip ±5 frames around each cut — no jump in the middle of a word, no 1-frame flashes, lips in sync.
+   **Eye-trace**: each new shot/insert should put the point of interest where the viewer's eyes were at the end of
+   the previous shot (invisible cut). Check the frame pairs at every cut.
 6. **Sound**: −14 LUFS / ≤ −1 dBTP measured on the delivered file; speech always on top of music.
 7. **Score** 1–10 as a strict senior editor; fix the 3 worst things, re-check, max 3 rounds without the user.
    Stop when the remaining notes are things a viewer would not notice — more "improving" adds slop.

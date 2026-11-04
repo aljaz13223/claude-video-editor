@@ -19,10 +19,19 @@ For every video: word-level transcript + frames at every visual change (scene de
 - **animation**: entry/exit, duration, easing, camera move.
 Group scenes into 6–10 **principles** (e.g. caption design, b-roll + text, line + text, graph, quote, illustration).
 
+### Measure, don't describe ("editing style is just rules")
+For each reference video compute and table: number of distinct layouts; average shot length (s); caption change
+interval (e.g. 0.333 s); words per caption; % of time the face is on screen; zooms per minute; graphics per minute;
+music level under speech; SFX per minute; hook length (s); cut style (jump / J-cut / match on eye-trace).
+Averages across 10–30 videos become the numbers in the style's SKILL.md. "Edit like X" without these numbers fails.
+
 ## 3. Package — `skills/<id>/`
 - `SKILL.md`: the principles as rules with numbers (sizes, durations, colours as tokens on top, ban list).
 - `references/`: one folder per principle with 3–10 example frames + keyframe sheet + a note "used when …".
 - Templates: implement each principle as a scene (see `motion-inserts` for the scene contract) — tokens at the top, never hard-coded elsewhere.
+
+Package the rules as a numbered SOP (≈12 steps: cut → layout → captions → zooms → graphics → b-roll → sound → QC)
+so every edit follows the same order.
 
 ## 4. Test before trusting
 1. Style test: 3 still frames from 3 lines of a real script → user approves look.

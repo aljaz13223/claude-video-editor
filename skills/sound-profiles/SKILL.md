@@ -26,6 +26,22 @@ Priority in a talking video: **speech > music > effects**. Effects are emphasis,
 - Rights: royalty-free or licensed only; log every track per client and never reuse the same track for the same client.
 - **Master**: −14 LUFS integrated, true peak ≤ −1 dBTP, measured on the delivered file (stereo). Two-pass loudnorm.
 
+## SFX map (when an effect is allowed at all)
+| sound | use for |
+|---|---|
+| click / tap | something pops up on screen (card, number, UI) |
+| flash / hit | a quick cut or flash frame |
+| whoosh | a real scene-to-scene transition (not every cut) |
+| glitch | text that slams in (tech/AI topics only) |
+| riser → hit | building tension into a reveal |
+Never more than one effect per second; skip them all for `story-loop` interviews.
+
+## Voice chain (`scripts/voice_chain.py`)
+The six things broadcast mics run through, as one ffmpeg filter: high-pass ~90 Hz → downward expander (quieter gaps)
+→ de-esser → presence EQ +2–3.5 dB at 3.5 kHz (−2 dB at 300 Hz) → compressor 3:1 → limiter, then loudness −16 LUFS.
+`python voice_chain.py speech.wav speech_chain.wav --preset clean|podcast|radio`. Run after noise removal / Enhance
+Speech, never instead of it. `clean` for already processed speech, `radio` for the warm close-mic sound.
+
 ## Check
 - Listen at the 3 loudest music moments: is every word clearly on top? If in doubt, music −3 dB.
 - `ffmpeg -i final.mp4 -af ebur128=peak=true -f null -` → I ≈ −14, TP ≤ −1.
