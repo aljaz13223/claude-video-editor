@@ -63,7 +63,7 @@ tl.fromTo("#stage", { scale: 1.0, x: 0, y: 0 }, { scale: 1.06, x: -12 * u * (D.d
 tl.fromTo("#bgfx", { x: 0, y: 0, rotation: 0 }, { x: -40 * u, y: -24 * u, rotation: 1.2, duration: T, ease: "none" }, 0);
 tl.fromTo("#scene", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0);
 tl.to("#scene", { opacity: 0, duration: 0.3, ease: "power2.in" }, T - 0.3);
-const IN = (t, d) => ({ duration: d || 0.6, ease: "expo.out", ...IR });
+const IN = (t, d) => ({ duration: d || 0.6, ease: "expo.out" });
 function title(txt, y, size) {
   if (!txt) return null;
   const e = el("div", { left: px(70), right: px(70), top: y, textAlign: "center", fontWeight: 900, fontSize: px(size || 74), lineHeight: 1.05, letterSpacing: "-0.02em" }, words(txt));
@@ -173,7 +173,7 @@ const SCENES = {
     tl.fromTo(mk, { opacity: 0, y: 30 * u }, { opacity: 1, y: 0, ...IN(0, 0.7) }, 0.2);
     const ws = t.innerHTML.split(/(?![^<]*>) /);
     t.innerHTML = ws.map(w => `<span style="display:inline-block;margin-right:0.25em">${w}</span>`).join("");
-    tl.fromTo(t.children, { opacity: 0, y: 24 * u }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: Math.min(0.12, (T * 0.5) / ws.length), ...IR }, 0.45);
+    tl.fromTo(t.children, { opacity: 0, y: 24 * u }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: Math.min(0.12, (T * 0.5) / ws.length) }, 0.45);
     if (who) tl.fromTo(who, { opacity: 0 }, { opacity: 1, duration: 0.5, ...IR }, 1.2);
   },
   // a line that draws through key words (Arthur-style)

@@ -19,6 +19,10 @@ Check frames, not code. Never report "done" from a log line.
 5. **Cuts**: frame strip ±5 frames around each cut — no jump in the middle of a word, no 1-frame flashes, lips in sync.
    **Eye-trace**: each new shot/insert should put the point of interest where the viewer's eyes were at the end of
    the previous shot (invisible cut). Check the frame pairs at every cut.
+   **Early pop-in**: an element must not be visible before its entrance animation (GSAP `fromTo` with
+   `immediateRender:false` leaves it at its CSS state until the tween starts). Entrance tweens render their
+   from-state immediately; only later re-animations of the same element use `immediateRender:false`.
+   Check a still ~0.2 s *before* every entrance.
 6. **Sound**: −14 LUFS / ≤ −1 dBTP measured on the delivered file; speech always on top of music.
 7. **Score** 1–10 as a strict senior editor; fix the 3 worst things, re-check, max 3 rounds without the user.
    Stop when the remaining notes are things a viewer would not notice — more "improving" adds slop.
