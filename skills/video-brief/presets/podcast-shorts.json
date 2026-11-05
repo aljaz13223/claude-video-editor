@@ -1,0 +1,50 @@
+{
+  "client": "podcast-shorts (example preset)",
+  "goal": "clip",
+  "length_s": [
+    30,
+    70
+  ],
+  "formats": {
+    "9x16": [
+      1080,
+      1920
+    ],
+    "4x5": [
+      1080,
+      1350
+    ]
+  },
+  "versions": [
+    "A",
+    "B"
+  ],
+  "graphics": {
+    "theme": "clean-podcast",
+    "amount": "srednje",
+    "captions": "karaoke, 2-3 words",
+    "lower_third": true,
+    "cta": "brand strip"
+  },
+  "camera": {
+    "zoom": "emotional",
+    "punch_in": 1.0,
+    "broll": true
+  },
+  "sound": {
+    "profile": "story-loop",
+    "music_db_under_speech": -21,
+    "music_db_no_speech": -14,
+    "sfx": "none",
+    "speech": "original"
+  },
+  "budget": {
+    "preview_height": 540,
+    "max_review_rounds": 3,
+    "paid_ai_credits": 0
+  },
+  "motion_inserts": {
+    "amount": "key-numbers",
+    "layout": "half"
+  }
+}

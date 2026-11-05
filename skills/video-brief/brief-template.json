@@ -1,0 +1,65 @@
+{
+  "project": "2026-11-03_example-reel",
+  "client": "example",
+  "goal": "objava | oglas | vabilo | clip",
+  "length_s": [
+    30,
+    60
+  ],
+  "formats": {
+    "9x16": [
+      1080,
+      1920
+    ],
+    "4x5": [
+      1080,
+      1350
+    ]
+  },
+  "versions": [
+    "A"
+  ],
+  "graphics": {
+    "theme": "warm-dark",
+    "amount": "malo",
+    "captions": "2-3 words, accent word coloured, never over the face",
+    "lower_third": true,
+    "cta": "end card"
+  },
+  "camera": {
+    "zoom": "emotional",
+    "punch_in": 1.0,
+    "broll": false
+  },
+  "sound": {
+    "profile": "story-loop",
+    "music_db_under_speech": -21,
+    "music_db_no_speech": -14,
+    "sfx": "none",
+    "speech": "original"
+  },
+  "budget": {
+    "preview_height": 540,
+    "max_review_rounds": 3,
+    "paid_ai_credits": 0
+  },
+  "deliver_to": "03-final/",
+  "notes": "",
+  "motion_inserts": {
+    "amount": "key-numbers",
+    "layout": "half",
+    "theme": "same-as-graphics",
+    "types": [
+      "stat",
+      "bar",
+      "line",
+      "steps",
+      "compare",
+      "quote",
+      "keyword",
+      "timeline",
+      "checklist",
+      "linetext"
+    ]
+  }
+}

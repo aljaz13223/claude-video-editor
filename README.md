@@ -27,6 +27,22 @@ came out of many rounds of feedback — see [`docs/EDITING-RULES.md`](docs/EDITI
 
 `cve all <proj>` runs cut → crop → build → music → render → timeline.
 
+## Workflow (brief → plan → preview → final)
+
+Every job starts with a one-screen **brief** (format, graphics theme, sound profile, zoom/b-roll) and an approved
+**edit plan** before anything renders — see [`docs/WORKFLOW.md`](docs/WORKFLOW.md) and the skills
+[`video-brief`](skills/video-brief), [`work-log`](skills/work-log) (day-by-day log of all work) and
+[`github-sync`](skills/github-sync) (publish generic code with a secret/private-name scan).
+
+| Skill | What it does |
+|---|---|
+| [`motion-inserts`](skills/motion-inserts) | graphs, counting numbers, steps, before/after, quotes, timelines, checklists **inside** a talking-head video — full, half-screen (speaker stays visible) or picture-in-picture; JSON spec → HyperFrames → overlaid in sync |
+| [`hooks-and-story`](skills/hooks-and-story) | clip choice, 4 S hook test, triple hook, announce → face / describe → show |
+| [`sound-profiles`](skills/sound-profiles) | story-loop / energy / no music / tonal; levels, music breaks, −14 LUFS |
+| [`quality-check`](skills/quality-check) | stills, captions = speech, rules, `motion_check.py` (still time, flashes), strict 1–10 score |
+| [`style-training`](skills/style-training) | train a whole style from 10–20 references into a skill + reference library |
+| [`ad-creative`](skills/ad-creative) | paid-social creatives: lead-in, barbell, testing order |
+
 ### Styles — pick how Claude edits your video
 
 Every edit style is a folder in [`styles/`](styles/) with a reference image, a description and its own template.
@@ -50,6 +66,15 @@ in the feed, which hides titles and logos; the 4:5 versions keep everything in f
 builds a new style folder (layout, type, colours, motion), renders a preview next to your reference and iterates.
 Your styles live in `<project>/styles/` and show up in the gallery next to the built-in ones. Pull requests with new
 styles are welcome.
+
+
+## Takeframe — desktop AI editor (new)
+
+[`takeframe/`](takeframe/) is a desktop video editor (Electron) where Claude builds the whole edit with these rules and skills,
+and you fine-tune it on a real multi-track timeline. Select any clip and ask Claude to change only that part.
+Local speech enhancement (DeepFilterNet3), voice/music separation (Demucs), Whisper transcripts, a music generator that
+never repeats a style, and one-click export to MP4 in every social format, MP3, music-only, speech-only, SRT/VTT/TXT.
+See [`takeframe/README.md`](takeframe/README.md).
 
 ## Install
 

@@ -1,0 +1,28 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Takeframe render</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>html,body{margin:0;background:#000;overflow:hidden}#stage{position:absolute;left:0;top:0;overflow:hidden;transform-origin:0 0;background:#000}</style>
+</head><body><div id="stage"></div>
+<script src="engine.js"></script>
+<script>
+const stage = document.getElementById('stage');
+const resolve = m => m ? (m.url || ('file:///' + m.path.replace(/\\/g, '/'))) : '';
+const comp = new TF.Compositor(stage, resolve);
+let project = null;
+const raf2 = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+host.on('render', async (msg) => {
+  try {
+    if (msg.cmd === 'load') {
+      project = msg.project; stage.innerHTML = ''; comp.nodes.clear();
+      stage.style.transform = `scale(${msg.scale || 1})`;
+      // preload every font that is used so the first frame is right
+      const fams = new Set(project.clips.filter(c => c.type === 'title').map(c => `${c.style.italic ? 'italic ' : ''}${c.style.weight} 40px "${c.style.font}"`));
+      await Promise.all([...fams].map(f => document.fonts.load(f).catch(() => {})));
+    } else if (msg.cmd === 'frame') {
+      await comp.draw(project, msg.t, { exact: true });
+      await raf2(); await new Promise(r => setTimeout(r, 40)); await raf2();
+    }
+    host.send('render-done', msg.id, null);
+  } catch (e) { host.send('render-done', msg.id, String(e && e.message || e)); }
+});
+</script></body></html>

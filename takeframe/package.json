@@ -1,0 +1,10 @@
+{
+  "name": "takeframe",
+  "productName": "Takeframe",
+  "version": "0.1.0",
+  "description": "AI video editor: Claude edits with skills, you fine-tune on the timeline.",
+  "main": "main.js",
+  "private": true,
+  "scripts": { "start": "electron ." },
+  "devDependencies": { "electron": "44.5.1" }
+}
